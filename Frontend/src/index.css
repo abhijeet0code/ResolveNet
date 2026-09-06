@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+@theme {
+  /* ================================
+     PRIMARY BRAND COLORS
+     ================================ */
+
+  --color-primary: #1F2E24;        /* Main Dark Green */
+
+  --color-primary-light: #2F4A38;  /* Light Dark Green */
+  --color-primary-dark: #162219;   /* Darkest Green */
+
+
+  /* ================================
+     BACKGROUND COLORS
+     ================================ */
+
+  --color-background: #F7F4EC;     /* Main Page Cream Background */
+  --color-surface: #FFFFFF;        /* White Navbar / Cards */
+  --color-card: #F0F1E5;           /* Light Cream-Green Cards */
+
+
+  /* ================================
+     SECONDARY / ACCENT COLORS
+     ================================ */
+
+  --color-secondary: #EBEDE0;      /* Light Greenish Cream */
+  --color-accent: #556B2F;         /* Olive Green Accent */
+  --color-accent-light: #E8EDDF;   /* Light Olive Green */
+
+
+  /* ================================
+     TEXT COLORS
+     ================================ */
+
+  --color-text-primary: #1F2E24;   /* Main Heading / Primary Text */
+  --color-text-secondary: #667067; /* Paragraph / Secondary Text */
+  --color-text-muted: #8A9089;     /* Muted / Less Important Text */
+
+
+  /* ================================
+     BORDER
+     ================================ */
+
+  --color-border: #D9DDD3;         /* Card / Input Borders */
+
+
+  /* ================================
+     STATUS COLORS
+     ================================ */
+
+  --color-success: #2E7D32;        /* Success / Verified */
+  --color-warning: #F59E0B;        /* Warning */
+  --color-error: #DC2626;          /* Error / Danger */
+
+
+  /* ================================
+     BORDER RADIUS
+     ================================ */
+
+  --radius-sm: 0.5rem;             /* 8px */
+  --radius-md: 0.75rem;            /* 12px */
+  --radius-lg: 1rem;               /* 16px */
+  --radius-xl: 1.5rem;             /* 24px */
+}
