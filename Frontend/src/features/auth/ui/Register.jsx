@@ -1,9 +1,8 @@
-// src/pages/Register.jsx
+// Register.jsx
 import React from "react";
 import { NavLink } from "react-router";
-import { UserPlus, User, Mail, Lock, Smartphone } from "lucide-react";
-
-import { useRegisterForm } from "../hook/useAuth";
+import { UserPlus, User, Mail, Lock, Smartphone, Phone } from "lucide-react";
+import { useRegisterForm } from "../hook/useAuth"; // ⚠️ confirm folder name: "hook" vs "hooks"
 import Button from "../../../shared/button/Button";
 import Input from "../../../shared/input/Input";
 import { GoogleIcon } from "./components/AuthComponent";
@@ -36,6 +35,7 @@ const Register = () => {
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
+            {/* Username */}
             <Input
               label="Username"
               icon={User}
@@ -50,16 +50,39 @@ const Register = () => {
               })}
             />
 
+            {/* Mobile Number */}
             <Input
-              label="Email/Mobile Number"
-              icon={Mail}
-              placeholder="Enter your email or mobile number"
-              error={errors.identifier}
-              registration={register("identifier", {
-                required: "This field is required",
+              label="Mobile Number"
+              icon={Phone}
+              type="tel"
+              placeholder="Enter your mobile number"
+              error={errors.mobile}
+              registration={register("mobile", {
+                required: "Mobile number is required",
+                pattern: {
+                  value: /^[6-9]\d{9}$/,
+                  message: "Enter a valid 10-digit mobile number",
+                },
               })}
             />
 
+            {/* Email */}
+            <Input
+              label="Email"
+              icon={Mail}
+              type="email"
+              placeholder="Enter your email"
+              error={errors.email}
+              registration={register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Enter a valid email address",
+                },
+              })}
+            />
+
+            {/* Password */}
             <Input
               label="Password"
               icon={Lock}
@@ -75,6 +98,7 @@ const Register = () => {
               })}
             />
 
+            {/* Confirm Password */}
             <Input
               label="Confirm Password"
               icon={Lock}
@@ -88,6 +112,7 @@ const Register = () => {
               })}
             />
 
+            {/* Terms */}
             <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
               <input
                 type="checkbox"
@@ -113,6 +138,7 @@ const Register = () => {
               </p>
             )}
 
+            {/* Submit */}
             <Button
               type="submit"
               variant="primary"
@@ -123,7 +149,7 @@ const Register = () => {
           </form>
         </div>
 
-        {/* Right: Alt options */}
+        {/* Right: Alternative Options */}
         <div className="flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-border pt-6 lg:pt-0 lg:pl-8">
           <div className="flex items-center gap-3 mb-6">
             <div className="flex-1 h-px bg-border" />
@@ -133,6 +159,7 @@ const Register = () => {
             <div className="flex-1 h-px bg-border" />
           </div>
 
+          {/* Google */}
           <button
             type="button"
             className="w-full flex items-center justify-center gap-2 border border-border rounded-lg py-2.5 text-sm font-semibold text-text-primary bg-surface hover:bg-secondary transition-colors duration-200 mb-3 cursor-pointer"
@@ -141,6 +168,7 @@ const Register = () => {
             Continue with Google
           </button>
 
+          {/* Phone */}
           <button
             type="button"
             className="w-full flex items-center justify-center gap-2 border border-border rounded-lg py-2.5 text-sm font-semibold text-text-primary bg-surface hover:bg-secondary transition-colors duration-200 mb-8 cursor-pointer"
@@ -149,12 +177,16 @@ const Register = () => {
             Continue with Phone Number
           </button>
 
+          {/* Login */}
           <div className="flex items-center justify-center gap-2 text-sm">
             <span className="text-text-secondary">
               Already have an account?
             </span>
             <NavLink to="/login">
-              <Button variant="primary" className="!w-auto !px-4 !py-2 bg-primary-light text-sm">
+              <Button
+                variant="primary"
+                className="!w-auto !px-4 !py-2 bg-primary-light text-sm"
+              >
                 Log In
               </Button>
             </NavLink>

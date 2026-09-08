@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router";
 import { Menu, X } from "lucide-react";
 import Button from "../shared/button/Button";
+import logo from "../assets/reallogo.png"
+import { useNavigate } from "react-router";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -12,6 +14,8 @@ const navLinks = [
 ];
 
 const Navbar = () => {
+  const navigate = useNavigate();
+
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -44,9 +48,8 @@ const Navbar = () => {
           ${scrolled ? "px-5 sm:px-8 h-16" : "px-4 sm:px-6 lg:px-8 h-20"}
         `}
       >
-        {/* Logo */}
-        <NavLink to="/" className="text-lg font-bold text-primary">
-          ResolveNet
+        <NavLink to="/" className="flex items-center">
+          <img src={logo} alt="ResolveNet" className="h-18 w-auto" />
         </NavLink>
 
         {/* Desktop Nav Links */}
@@ -60,7 +63,7 @@ const Navbar = () => {
 
         {/* Desktop Buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="outline" className="!w-auto !px-4 !py-2 text-sm">
+          <Button onClick={() => navigate("/login")} variant="outline" className="!w-auto !px-4 !py-2 text-sm">
             Login
           </Button>
           <Button variant="primary" className="!w-auto !px-4 !py-2 text-sm">
@@ -99,7 +102,7 @@ const Navbar = () => {
           </nav>
 
           <div className="flex flex-col gap-3 mt-4">
-            <Button variant="outline" className="w-full text-sm">
+            <Button onClick={() => navigate("/login")} variant="outline" className="w-full text-sm">
               Login
             </Button>
             <Button variant="primary" className="w-full text-sm">
