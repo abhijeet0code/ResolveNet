@@ -22,7 +22,8 @@ export const useRegisterForm = () => {
   const form = useForm({
     defaultValues: {
       username: "",
-      identifier: "",
+      mobile: "",
+      email: "",
       password: "",
       confirmPassword: "",
       agreeTerms: false,
@@ -30,13 +31,9 @@ export const useRegisterForm = () => {
   });
 
   const onSubmit = (data) => {
-    if (data.password !== data.confirmPassword) {
-      form.setError("confirmPassword", {
-        type: "manual",
-        message: "Passwords do not match",
-      });
-      return;
-    }
+    // confirmPassword already validated via the field's own `validate` rule,
+    // so this manual check is not needed — react-hook-form won't call
+    // onSubmit if that validation fails.
     // TODO: connect API
     console.log("Register submitted:", data);
   };

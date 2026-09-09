@@ -45,7 +45,7 @@ const socialLinks = [
   },
   {
     icon: FaInstagram,
-    url: "https://instagram.com",
+    url: "https://www.instagram.com/_aryan_ahir01/",
     label: "Instagram",
   },
   {
