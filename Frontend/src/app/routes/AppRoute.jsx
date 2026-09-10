@@ -6,15 +6,14 @@ import About from '../../pages/About'
 import AuthLayout from '../layout/AuthLayout'
 import Register from '../../features/auth/ui/Register'
 import Login from '../../features/auth/ui/Login'
-// import { useDispatch } from "react-redux"
-// import { loggedUser } from '../../features/auth/state/authAction'
+import { useDispatch } from "react-redux"
+import { loggedUser } from '../../features/auth/state/authAction'
 
 const AppRoute = () => {
-//   let dispatch =useDispatch()
-//   useEffect(()=>{
-// dispatch(loggedUser)
-
-//   },[])
+  let dispatch =useDispatch()
+  useEffect(() => {
+  dispatch(loggedUser());   // 👈 () add kiya, pehle bina call ke bhej rahe the
+}, []);
   let router=createBrowserRouter([
     {
       path:"/",

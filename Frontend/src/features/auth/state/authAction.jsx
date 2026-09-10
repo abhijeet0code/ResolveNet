@@ -1,24 +1,42 @@
-// import { createAsyncThunk } from "@reduxjs/toolkit";
-// import axiosInstance from "../../../config/axiosInstance";
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import axiosInstance from "../../../config/axiosInstance";
 
-// export const loginUser =createAsyncThunk("/api/login",async(credentials,thunkApi)=>{
-//     try {
+export const loginUser = createAsyncThunk(
+  "auth/login",
+  async (credentials, thunkApi) => {
+    try {
+      let res = await axiosInstance.post("/api/auth/login/", credentials);
+      return res.data;
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        error.response?.data || "Login failed"
+      );
+    }
+  }
+);
 
-//         let  res = await axiosInstance.post("/api/login",credentials)
+export const registerUser = createAsyncThunk(
+  "auth/register",
+  async (credentials, thunkApi) => {
+    try {
+      let res = await axiosInstance.post("/api/auth/register/", credentials);
+      return res.data;
+    } catch (error) {
+      return thunkApi.rejectWithValue(
+        error.response?.data || "Registration failed"
+      );
+    }
+  }
+);
 
-//         return res.data
-        
-//     } catch (error) {
-//         thunkApi.rejectWithValue(error)
-//     }
-
-// })
-
-// export const loggedUser= createAsyncThunk("/api/me",async(_,thunkApi)=>{
-// try {
-//     let res = await axiosInstance.get("/api/me")
-//     return res.data.user
-// } catch (error) {
-//     thunkApi.rejectWithValue(error)
-// }
-// })
+export const loggedUser = createAsyncThunk(
+  "auth/me",
+  async (_, thunkApi) => {
+    try {
+      let res = await axiosInstance.get("/api/auth/me/");
+      return res.data.user;
+    } catch (error) {
+      return thunkApi.rejectWithValue(error.response?.data || "Not logged in");
+    }
+  }
+);
