@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router";
 import { Menu, X } from "lucide-react";
 import Button from "../shared/button/Button";
-import logo from "../assets/reallogo.png"
+import logo from "../assets/Resolve_net_logo-removebg.png"
 import { useNavigate } from "react-router";
 
 const navLinks = [
@@ -49,7 +49,7 @@ const Navbar = () => {
         `}
       >
         <NavLink to="/" className="flex items-center">
-          <img src={logo} alt="ResolveNet" className="h-18 w-auto" />
+          <img src={logo} alt="ResolveNet" className="h-40 w-auto" />
         </NavLink>
 
         {/* Desktop Nav Links */}
