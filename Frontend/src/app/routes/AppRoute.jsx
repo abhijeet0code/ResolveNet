@@ -6,6 +6,7 @@ import About from '../../pages/About'
 import AuthLayout from '../layout/AuthLayout'
 import Register from '../../features/auth/ui/Register'
 import Login from '../../features/auth/ui/Login'
+import AuthCallback from "../../features/auth/ui/AuthCallback";
 // import { useDispatch } from "react-redux"
 // import { loggedUser } from '../../features/auth/state/authAction'
 
@@ -31,6 +32,10 @@ const AppRoute = () => {
     
 
     },
+    {
+    path: "/auth/callback",
+    element: <AuthCallback />,
+},
     {
       path:"/main",
       element:<Mainlayout/>,
