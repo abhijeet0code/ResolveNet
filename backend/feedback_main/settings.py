@@ -94,6 +94,10 @@ DATABASES = {
         'PORT': config('DB_PORT'),
     }
 }
+
+SUPABASE_URL = config("SUPABASE_URL")
+SUPABASE_PUBLISHABLE_KEY = config("SUPABASE_PUBLISHABLE_KEY")
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",   # Vite ka default port
 ]
