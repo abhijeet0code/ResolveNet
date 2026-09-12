@@ -118,6 +118,7 @@ const Login = () => {
 
           <button
             type="button"
+            onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-2 border border-border rounded-lg py-2.5 text-sm font-semibold text-text-primary bg-surface hover:bg-secondary transition-colors duration-200 mb-3 cursor-pointer"
           >
             <GoogleIcon />
