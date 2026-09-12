@@ -6,6 +6,21 @@ import { useLoginForm } from "../hook/useAuth"; // ⚠️ confirm folder name: "
 import Button from "../../../shared/button/Button";
 import Input from "../../../shared/input/Input";
 import { GoogleIcon } from "./components/AuthComponent";
+import { supabase } from "../../../lib/supabase"
+
+const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+        },
+    });
+
+    if (error) {
+        console.error(error.message);
+    }
+};
+
 
 const Login = () => {
   const {
