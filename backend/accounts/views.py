@@ -9,6 +9,9 @@ from rest_framework.permissions import IsAuthenticated
 from .authentication import SupabaseAuthentication
 from .models import Profile
 
+
+
+
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
