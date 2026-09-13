@@ -6,7 +6,9 @@ import AppRoute from './app/routes/AppRoute.jsx'
 
 createRoot(document.getElementById('root')).render(
     // <Provider store={store}></Provider>
-    <AppRoute/>
+      <StrictMode>
+    <AppRoute />
+  </StrictMode>
 
     
 )

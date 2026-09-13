@@ -21,8 +21,34 @@ const AuthCallback = () => {
                 return;
             }
 
-            navigate("/main");
+             const token = session.access_token;
+
+            try {
+                const response = await fetch(
+                    "http://localhost:8000/api/auth/me/",
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                );
+                if (!response.ok) {
+                    throw new Error("Django authentication failed");
+                }
+                const user = await response.json();
+                navigate("/main");
+
+            } catch (error) {
+                console.error(error);
+
+                navigate("/login");
+            }
+
+
         };
+
+        
 
         finishLogin();
 

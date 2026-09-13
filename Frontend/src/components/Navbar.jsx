@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import Button from "../shared/button/Button";
 import logo from "../assets/Resolve_net_logo-removebg.png"
-import { useNavigate } from "react-router";
+
 
 const navLinks = [
-  { name: "Home", path: "/" },
+  { name: "Home", path: "/main" },
   { name: "Explore", path: "/explore" },
   { name: "How it works", path: "/how-it-works" },
   { name: "Solutions", path: "/solutions" },
@@ -48,7 +48,7 @@ const Navbar = () => {
           ${scrolled ? "px-5 sm:px-8 h-16" : "px-4 sm:px-6 lg:px-8 h-20"}
         `}
       >
-        <NavLink to="/" className="flex items-center">
+        <NavLink to="/main" className="flex items-center">
           <img src={logo} alt="ResolveNet" className="h-40 w-auto" />
         </NavLink>
 
