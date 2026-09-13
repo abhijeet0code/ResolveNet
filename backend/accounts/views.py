@@ -5,7 +5,12 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from .serializers import RegisterSerializer
+from rest_framework.permissions import IsAuthenticated
+from .authentication import SupabaseAuthentication
 from .models import Profile
+
+
+
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -37,3 +42,15 @@ class LoginView(APIView):
                 return Response({'token': token.key, 'username': user.username})
 
         return Response({'error': 'Invalid credentials'}, status=400)
+
+class CurrentUserView(APIView):
+
+    authentication_classes = [SupabaseAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        return Response({
+            "email": request.user.email,
+            "username": request.user.username,
+        })

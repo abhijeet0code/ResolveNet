@@ -6,6 +6,22 @@ import { useRegisterForm } from "../hook/useAuth"; // ⚠️ confirm folder name
 import Button from "../../../shared/button/Button";
 import Input from "../../../shared/input/Input";
 import { GoogleIcon } from "./components/AuthComponent";
+import { supabase } from "../../../lib/supabase"
+
+const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+        },
+    });
+
+    if (error) {
+        console.error(error.message);
+    }
+};
+
+
 
 const Register = () => {
   const {
@@ -162,6 +178,7 @@ const Register = () => {
           {/* Google */}
           <button
             type="button"
+            onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-2 border border-border rounded-lg py-2.5 text-sm font-semibold text-text-primary bg-surface hover:bg-secondary transition-colors duration-200 mb-3 cursor-pointer"
           >
             <GoogleIcon />
