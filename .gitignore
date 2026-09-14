@@ -1,2 +1,12 @@
 venv/
+sih/
+node_modules/
 backend/.env
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+*.pyo
+.vscode/
+.idea/
