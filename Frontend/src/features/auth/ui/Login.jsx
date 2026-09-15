@@ -1,11 +1,26 @@
 // Login.jsx
 import React from "react";
-import { NavLink } from "react-router";
+import { NavLink } from "react-router-dom";
 import { ShieldCheck, Mail, Lock, Smartphone, ArrowRight } from "lucide-react";
-import { useLoginForm } from "../hook/useAuth"; // ⚠️ confirm folder name: "hook" vs "hooks"
+import { useLoginForm } from "../hook/useAuth";
 import Button from "../../../shared/button/Button";
 import Input from "../../../shared/input/Input";
 import { GoogleIcon } from "./components/AuthComponent";
+import { supabase } from "../../../lib/supabase"
+
+const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+            redirectTo: `${window.location.origin}/auth/callback`,
+        },
+    });
+
+    if (error) {
+        console.error(error.message);
+    }
+};
+
 
 const Login = () => {
   const {
@@ -103,6 +118,7 @@ const Login = () => {
 
           <button
             type="button"
+            onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-2 border border-border rounded-lg py-2.5 text-sm font-semibold text-text-primary bg-surface hover:bg-secondary transition-colors duration-200 mb-3 cursor-pointer"
           >
             <GoogleIcon />
