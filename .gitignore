@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Environment files
 **/.env
 **/.env.*
@@ -6,3 +7,25 @@
 # Python cache
 **/__pycache__/
 *.pyc
+=======
+sih/
+backend/.env
+
+.env
+.env.*
+!.env.example
+
+
+__pycache__/
+*.py[cod]
+*.pyo
+
+
+.vscode/
+.idea/
+
+
+node_modules
+node_modules
+node_modules
+>>>>>>> 1c25876f34c419c95d1485c3e49b00dc2ee2238f

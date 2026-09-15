@@ -56,9 +56,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+<<<<<<< HEAD
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",   # Vite ka default port
 ]
+=======
+>>>>>>> 1c25876f34c419c95d1485c3e49b00dc2ee2238f
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -85,6 +88,8 @@ WSGI_APPLICATION = 'feedback_main.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
@@ -101,6 +106,16 @@ DATABASES = {
 
 SUPABASE_URL = config("SUPABASE_URL")
 SUPABASE_PUBLISHABLE_KEY = config("SUPABASE_PUBLISHABLE_KEY")
+<<<<<<< HEAD
+=======
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+>>>>>>> 1c25876f34c419c95d1485c3e49b00dc2ee2238f
+
+CORS_ALLOW_CREDENTIALS = True
 
 
 # Password validation
@@ -138,4 +153,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+<<<<<<< HEAD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+=======
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+>>>>>>> 1c25876f34c419c95d1485c3e49b00dc2ee2238f

@@ -2,7 +2,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { ShieldCheck, Mail, Lock, Smartphone, ArrowRight } from "lucide-react";
-import { useLoginForm } from "../hook/useAuth"; // ⚠️ confirm folder name: "hook" vs "hooks"
+import { useLoginForm } from "../hook/useAuth";
 import Button from "../../../shared/button/Button";
 import Input from "../../../shared/input/Input";
 import { GoogleIcon } from "./components/AuthComponent";

@@ -2,7 +2,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { UserPlus, User, Mail, Lock, Smartphone, Phone } from "lucide-react";
-import { useRegisterForm } from "../hook/useAuth"; // ⚠️ confirm folder name: "hook" vs "hooks"
+import { useRegisterForm } from "../hook/useAuth"; 
 import Button from "../../../shared/button/Button";
 import Input from "../../../shared/input/Input";
 import { GoogleIcon } from "./components/AuthComponent";
