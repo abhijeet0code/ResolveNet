@@ -1,6 +1,6 @@
 // Register.jsx
 import React from "react";
-import { NavLink } from "react-router";
+import { NavLink } from "react-router-dom";
 import { UserPlus, User, Mail, Lock, Smartphone, Phone } from "lucide-react";
 import { useRegisterForm } from "../hook/useAuth"; // ⚠️ confirm folder name: "hook" vs "hooks"
 import Button from "../../../shared/button/Button";
