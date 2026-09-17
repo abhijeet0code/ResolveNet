@@ -1,10 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
-<<<<<<< HEAD
-=======
 import { toast } from "react-toastify";
->>>>>>> 1c25876f34c419c95d1485c3e49b00dc2ee2238f
 
 const AuthCallback = () => {
 
@@ -41,10 +38,7 @@ const AuthCallback = () => {
                     throw new Error("Django authentication failed");
                 }
                 const user = await response.json();
-<<<<<<< HEAD
-=======
                 toast.success("User LoggedIn successfully")
->>>>>>> 1c25876f34c419c95d1485c3e49b00dc2ee2238f
                 navigate("/main");
 
             } catch (error) {
