@@ -8,7 +8,7 @@ from .serializers import RegisterSerializer,ProfileSerializer
 from rest_framework.permissions import IsAuthenticated
 from .authentication import SupabaseAuthentication
 from .models import Profile
-
+from rest_framework.authentication import TokenAuthentication
 
 
 
@@ -94,6 +94,7 @@ class ProfileView(APIView):
                       status=status.HTTP_400_BAD_REQUEST
                  )
             serializer=ProfileSerializer(data=request.data)
+            
             if serializer.is_valid():
                 serializer.save(
                     user=request.user
