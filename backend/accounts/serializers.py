@@ -5,14 +5,13 @@ from .models import Profile
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     confirm_password = serializers.CharField(write_only=True)
-    phone_number = serializers.CharField(required=False, allow_blank=True, default='')
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone_number', 'password', 'confirm_password']
+        fields = ['email','password', 'confirm_password']
 
     def validate_email(self, value):
-        if value and User.objects.filter(email=value).exists():
+        if User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email already registered.")
         return value
 
@@ -22,20 +21,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        phone_number = validated_data.pop('phone_number', '')
         validated_data.pop('confirm_password')
         
         user = User.objects.create_user(
-            username=validated_data['username'],
+            username=validated_data['email'],
             email=validated_data.get('email', ''),
             password=validated_data['password']
         )
-        Profile.objects.create(user=user, phone_number=phone_number)
         return user
 
-class SerializerProfile(serializers.ModelSerializer):
-    from rest_framework import serializers
-from .models import Profile
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -46,6 +40,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "full_name",
+            "username",
             "phone",
             "city",
             "state",

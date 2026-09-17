@@ -8,7 +8,7 @@ class Profile(models.Model):
 
     full_name = models.CharField(max_length=100,blank=True,default="")
     username = models.CharField(max_length=100,unique=True,null=True,blank=True)
-    phone_number = models.CharField(max_length=15,unique=True,null=True,blank=True)
+    phone= models.CharField(max_length=15,unique=True,null=True,blank=True)
 
     city = models.CharField(max_length=50,blank=True,default="")
     state = models.CharField(max_length=50,blank=True,default="")
