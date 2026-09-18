@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 const ImageCarousel = ({ images, interval = 3000 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
+  useEffect(() => { 
     if (!images || images.length <= 1) return;
 
     const timer = setInterval(() => {

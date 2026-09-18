@@ -2,18 +2,20 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import Button from "../shared/button/Button";
-import logo from "../assets/Resolve_net_logo-removebg.png"
-
+import logo from "../assets/Resolve_net_logo-removebg.png";
+import { useSelector } from "react-redux";
 
 const navLinks = [
-  { name: "Home", path: "/main" },
+  { name: "Home", path: "/" },
   { name: "Explore", path: "/explore" },
   { name: "How it works", path: "/how-it-works" },
   { name: "Solutions", path: "/solutions" },
-  { name: "About", path: "/main/about" },
+  { name: "About", path: "/about" },
 ];
 
 const Navbar = () => {
+  const user = useSelector((store) => store.auth.user);
+
   const navigate = useNavigate();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -48,7 +50,7 @@ const Navbar = () => {
           ${scrolled ? "px-5 sm:px-8 h-16" : "px-4 sm:px-6 lg:px-8 h-20"}
         `}
       >
-        <NavLink to="/main" className="flex items-center">
+        <NavLink to="/" className="flex items-center">
           <img src={logo} alt="ResolveNet" className="h-40 w-auto" />
         </NavLink>
 
@@ -61,14 +63,34 @@ const Navbar = () => {
           ))}
         </nav>
 
-        {/* Desktop Buttons */}
+        {/* Desktop Right Section */}
         <div className="hidden md:flex items-center gap-3">
-          <Button onClick={() => navigate("/login")} variant="outline" className="!w-auto !px-4 !py-2 text-sm">
-            Login
-          </Button>
-          <Button variant="primary" className="!w-auto !px-4 !py-2 text-sm">
-            Join ResolveNet
-          </Button>
+          {user ? (
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-semibold text-text-primary"
+              aria-label="Go to profile"
+            >
+              {user.username?.[0]?.toUpperCase() || "U"}
+            </button>
+          ) : (
+            <>
+              <Button
+                onClick={() => navigate("/login")}
+                variant="outline"
+                className="!w-auto !px-4 !py-2 text-sm"
+              >
+                Login
+              </Button>
+              <Button
+                onClick={() => navigate("/register")}
+                variant="primary"
+                className="!w-auto !px-4 !py-2 text-sm"
+              >
+                Join ResolveNet
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -102,12 +124,37 @@ const Navbar = () => {
           </nav>
 
           <div className="flex flex-col gap-3 mt-4">
-            <Button onClick={() => navigate("/login")} variant="outline" className="w-full text-sm">
-              Login
-            </Button>
-            <Button variant="primary" className="w-full text-sm">
-              Join ResolveNet
-            </Button>
+            {user ? (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate("/dashboard");
+                }}
+                className="flex items-center gap-3 w-full text-sm font-medium text-text-primary"
+              >
+                <span className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-sm font-semibold">
+                  {user.username?.[0]?.toUpperCase() || "U"}
+                </span>
+                My Profile
+              </button>
+            ) : (
+              <>
+                <Button
+                  onClick={() => navigate("/login")}
+                  variant="outline"
+                  className="w-full text-sm"
+                >
+                  Login
+                </Button>
+                <Button
+                  onClick={() => navigate("/register")}
+                  variant="primary"
+                  className="w-full text-sm"
+                >
+                  Join ResolveNet
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

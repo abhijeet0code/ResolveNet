@@ -13,4 +13,8 @@ requests==2.34.2
 sqlparse==0.6.0
 supabase>=2.0,<3.0
 tzdata==2026.3
+<<<<<<< HEAD
 urllib3==2.7.0
+=======
+urllib3==2.7.0
+>>>>>>> 141daa0bc0194b7f3434c3ecef11342a8e50fa41

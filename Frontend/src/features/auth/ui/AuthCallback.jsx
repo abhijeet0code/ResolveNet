@@ -39,7 +39,7 @@ const AuthCallback = () => {
                 }
                 const user = await response.json();
                 toast.success("User LoggedIn successfully")
-                navigate("/main");
+                navigate("/dashboard");
 
             } catch (error) {
                 console.error(error);

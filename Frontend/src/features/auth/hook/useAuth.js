@@ -21,7 +21,7 @@ export const useLoginForm = () => {
 
     if (loginUser.fulfilled.match(result)) {
       localStorage.setItem("token", result.payload.token);
-      navigate("/main");
+      navigate("/dashboard");
     } else {
       form.setError("password", {
         type: "manual",

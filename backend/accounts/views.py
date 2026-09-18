@@ -8,6 +8,8 @@ import uuid
 from .serializers import RegisterSerializer,ProfileSerializer
 from rest_framework.permissions import IsAuthenticated
 from .authentication import SupabaseAuthentication
+from rest_framework.authentication import TokenAuthentication
+
 from .models import Profile
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -52,7 +54,7 @@ class LoginView(APIView):
 
 class CurrentUserView(APIView):
 
-    authentication_classes = [SupabaseAuthentication]
+    authentication_classes = [TokenAuthentication,SupabaseAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
