@@ -1,16 +1,16 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions,status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer,ProfileSerializer
 from rest_framework.permissions import IsAuthenticated
 from .authentication import SupabaseAuthentication
 from rest_framework.authentication import TokenAuthentication
 
 from .models import Profile
-
+from rest_framework.authentication import TokenAuthentication
 
 
 
@@ -53,6 +53,63 @@ class CurrentUserView(APIView):
     def get(self, request):
 
         return Response({
+            "id":request.user.id,
             "email": request.user.email,
             "username": request.user.username,
         })
+
+
+class ProfileView(APIView):
+
+    authentication_classes = [
+        TokenAuthentication,
+        SupabaseAuthentication
+    ]
+
+    permission_classes=[IsAuthenticated]
+
+
+    def get(self,request):
+
+        try:
+            profile=Profile.objects.get(user=request.user)
+
+        except Profile.DoesNotExist:
+
+             return Response(
+                  {
+                       "message": "Profile not found."
+                  },status=status.HTTP_404_NOT_FOUND
+             )
+
+        serializer=ProfileSerializer(profile)
+
+        return Response(
+             serializer.data,
+             status=status.HTTP_200_OK
+        )
+
+    def post(self,request):
+    
+            if Profile.objects.filter(user=request.user).exists():
+                 return Response({"message":"Profile already exists."},
+                      status=status.HTTP_400_BAD_REQUEST
+                 )
+            serializer=ProfileSerializer(data=request.data)
+            
+            if serializer.is_valid():
+                serializer.save(
+                    user=request.user
+                )
+                return Response(
+                    {
+                        "message": "Profile created successfully.",
+                        "profile": serializer.data
+                    },
+                    status=status.HTTP_201_CREATED
+                )
+    
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
