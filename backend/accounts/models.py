@@ -15,6 +15,12 @@ class Profile(models.Model):
 
     bio = models.TextField(blank=True,default="")
 
+    avatar_path = models.CharField(
+    max_length=500,
+    blank=True,
+    default="",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     updated_at = models.DateTimeField(auto_now=True)
