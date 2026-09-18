@@ -2,17 +2,27 @@ import uuid
 
 from django.db import transaction
 from rest_framework import permissions, status
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.image_validation import validate_uploaded_image
-from core.supabase_storage import delete_image, upload_image
+from accounts.authentication import SupabaseAuthentication
+from feedback_main.image_validation import validate_uploaded_image
+from feedback_main.supabase_storage import (
+    delete_image,
+    upload_image,
+)
+
 from .models import Post, PostMedia
 from .serializers import PostSerializer
 
 
 class PostCreateView(APIView):
+    authentication_classes = [
+        TokenAuthentication,
+        SupabaseAuthentication,
+    ]
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
@@ -24,7 +34,9 @@ class PostCreateView(APIView):
 
         if not caption:
             return Response(
-                {"caption": "Caption is required."},
+                {
+                    "caption": "Caption is required.",
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -42,8 +54,12 @@ class PostCreateView(APIView):
                     ),
                     city=request.data.get("city", ""),
                     state=request.data.get("state", ""),
-                    latitude=request.data.get("latitude") or None,
-                    longitude=request.data.get("longitude") or None,
+                    latitude=(
+                        request.data.get("latitude") or None
+                    ),
+                    longitude=(
+                        request.data.get("longitude") or None
+                    ),
                 )
 
                 image_path = (
@@ -64,11 +80,14 @@ class PostCreateView(APIView):
                     storage_path=image_path,
                     mime_type=image.content_type,
                     position=0,
-                    alt_text=request.data.get("alt_text", ""),
+                    alt_text=request.data.get(
+                        "alt_text",
+                        "",
+                    ),
                 )
 
         except Exception:
-            # Prevent an unused Supabase image if database work fails.
+            # Delete the uploaded image if database saving fails.
             if image_path:
                 try:
                     delete_image(
@@ -82,7 +101,9 @@ class PostCreateView(APIView):
 
         serializer = PostSerializer(
             post,
-            context={"request": request},
+            context={
+                "request": request,
+            },
         )
 
         return Response(

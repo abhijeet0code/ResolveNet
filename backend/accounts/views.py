@@ -122,6 +122,10 @@ class ProfileView(APIView):
             )
 
 class ProfileAvatarUploadView(APIView):
+    authentication_classes = [
+        TokenAuthentication,
+        SupabaseAuthentication,
+    ]
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
