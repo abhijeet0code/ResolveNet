@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from .serializers import RegisterSerializer
 from rest_framework.permissions import IsAuthenticated
 from .authentication import SupabaseAuthentication
+from rest_framework.authentication import TokenAuthentication
+
 from .models import Profile
 
 
@@ -45,7 +47,7 @@ class LoginView(APIView):
 
 class CurrentUserView(APIView):
 
-    authentication_classes = [SupabaseAuthentication]
+    authentication_classes = [TokenAuthentication,SupabaseAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):

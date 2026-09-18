@@ -38,8 +38,10 @@ export const loggedUser = createAsyncThunk(
   async (_, thunkApi) => {
     try {
       let res = await axiosInstance.get("/api/auth/me/");
-      return res.data.user;
-    } catch (error) {
+      console.log(res);
+      
+      return res.data;
+    }  catch (error) {
       return thunkApi.rejectWithValue(error.response?.data || "Not logged in");
     }
   }
