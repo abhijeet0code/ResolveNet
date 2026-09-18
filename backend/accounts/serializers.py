@@ -54,3 +54,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+        def get_avatar_url(self, profile):
+            return get_public_image_url(
+            bucket="avatars",
+            path=profile.avatar_path,)
+

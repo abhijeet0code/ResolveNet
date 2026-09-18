@@ -4,12 +4,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+import uuid
 from .serializers import RegisterSerializer,ProfileSerializer
 from rest_framework.permissions import IsAuthenticated
 from .authentication import SupabaseAuthentication
 from .models import Profile
 from rest_framework.authentication import TokenAuthentication
-
+from rest_framework.parsers import FormParser, MultiPartParser
+from feedback_main.image_validation import validate_uploaded_image
+from feedback_main.supabase_storage import (
+    delete_image,
+    get_public_image_url,
+    upload_image,
+)
 
 
 class RegisterView(generics.CreateAPIView):
@@ -111,3 +118,49 @@ class ProfileView(APIView):
                 serializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+class ProfileAvatarUploadView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        image = request.FILES.get("image")
+        extension = validate_uploaded_image(image)
+
+        profile = request.user.profile
+        old_avatar_path = profile.avatar_path
+
+        new_avatar_path = (
+            f"users/{request.user.id}/"
+            f"{uuid.uuid4().hex}{extension}"
+        )
+
+        upload_image(
+            bucket="avatars",
+            path=new_avatar_path,
+            image=image,
+        )
+
+        profile.avatar_path = new_avatar_path
+        profile.save(update_fields=["avatar_path", "updated_at"])
+
+        if old_avatar_path:
+            try:
+                delete_image(
+                    bucket="avatars",
+                    path=old_avatar_path,
+                )
+            except Exception:
+                pass
+
+        return Response(
+            {
+                "message": "Profile image updated.",
+                "avatar_path": profile.avatar_path,
+                "avatar_url": get_public_image_url(
+                    bucket="avatars",
+                    path=profile.avatar_path,
+                ),
+            },
+            status=status.HTTP_200_OK,
+        )
