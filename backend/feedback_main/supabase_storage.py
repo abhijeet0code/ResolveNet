@@ -8,7 +8,7 @@ from supabase import Client, create_client
 
 supabase: Client = create_client(
     settings.SUPABASE_URL,
-    settings.SUPABASE_SERVICE_ROLE_KEY,
+    settings.SUPABASE_SECRET_KEY,
 )
 
 
