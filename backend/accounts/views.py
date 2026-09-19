@@ -20,6 +20,8 @@ from feedback_main.supabase_storage import (
     upload_image,
 )
 
+from .utils import get_embedding
+
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -105,13 +107,19 @@ class ProfileView(APIView):
             serializer=ProfileSerializer(data=request.data)
             
             if serializer.is_valid():
-                serializer.save(
+                profile = serializer.save(
                     user=request.user
                 )
+
+                text_to_embed = f"{profile.username or ''} {profile.full_name or ''}".strip()
+                if text_to_embed:
+                    profile.embedding = get_embedding(text_to_embed)
+                    profile.save(update_fields=["embedding"])
+
                 return Response(
                     {
                         "message": "Profile created successfully.",
-                        "profile": serializer.data
+                        "profile": ProfileSerializer(profile).data
                     },
                     status=status.HTTP_201_CREATED
                 )

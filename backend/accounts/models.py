@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from pgvector.django import VectorField
 
 
 
@@ -20,6 +21,8 @@ class Profile(models.Model):
     blank=True,
     default="",
     )
+
+    embedding = VectorField(dimensions=384, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
