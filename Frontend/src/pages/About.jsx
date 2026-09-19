@@ -4,24 +4,6 @@ const About = () => {
   return (
     <div>
 
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      Its About Time
     </div>
   )
 }
