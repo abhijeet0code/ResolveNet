@@ -13,6 +13,10 @@ import PublicLayout from "../layout/PublicLayout";
 import ProtectedLayout from "../protected/ProtectedLayout";
 import DashboardLayout from "../layout/DashboardLayout";
 import Profile from "../../features/dashboard/ui/components/Profile";
+import ProfileSetupWizard from "../../components/ProfileSetup/ProfileSetupWizard ";
+import DashHome from "../../features/dashboard/ui/pages/DashHome";
+import Feed from "../../features/posts/ui/page/Feed";
+import CreatePost from "../../features/posts/ui/components/CreatePost";
 
 const AppRoute = () => {
   const dispatch = useDispatch();
@@ -21,7 +25,7 @@ const AppRoute = () => {
     dispatch(loggedUser());
   }, []);
 
-  const router = createBrowserRouter([
+ const router = createBrowserRouter([
   {
     path: "/auth/callback",
     element: <AuthCallback />,
@@ -67,11 +71,20 @@ const AppRoute = () => {
         children: [
           {
             index: true,
+            element: <Feed />,
+          },
+          {
+            path: "create",
+            element: <CreatePost />,
+          },
+          {
+            path: "profile",
             element: <Profile />,
           },
-          // more dashboard routes here, e.g.:
-          // { path: "reports", element: <Reports /> },
-          // { path: "complaints", element: <Complaints /> },
+          {
+            path: "profile-setup",
+            element: <ProfileSetupWizard isEdit />,
+          },
         ],
       },
     ],

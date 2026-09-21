@@ -51,36 +51,9 @@ const Register = () => {
           </div>
 
           <form onSubmit={onSubmit} className="space-y-4" noValidate>
-            {/* Username */}
-            <Input
-              label="Username"
-              icon={User}
-              placeholder="Enter your username"
-              error={errors.username}
-              registration={register("username", {
-                required: "Username is required",
-                minLength: {
-                  value: 3,
-                  message: "Username must be at least 3 characters",
-                },
-              })}
-            />
 
-            {/* Mobile Number */}
-            <Input
-              label="Mobile Number"
-              icon={Phone}
-              type="tel"
-              placeholder="Enter your mobile number"
-              error={errors.mobile}
-              registration={register("mobile", {
-                required: "Mobile number is required",
-                pattern: {
-                  value: /^[6-9]\d{9}$/,
-                  message: "Enter a valid 10-digit mobile number",
-                },
-              })}
-            />
+
+  
 
             {/* Email */}
             <Input

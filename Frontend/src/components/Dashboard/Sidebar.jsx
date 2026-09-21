@@ -3,16 +3,18 @@ import { NavLink } from "react-router-dom";
 import {
   Home,
   MapPin,
+  FilePlus2,
+  MessageCircleWarning,
   Swords,
   User,
   ArrowLeftRight,
-  Plus
 } from "lucide-react";
 
 const navItems = [
   { label: "Home", icon: Home, path: "/dashboard" },
-  { label: "Map", icon: MapPin, path: "/" },
-  { label: "Report", icon: Plus, path: "/dashboard/report" },
+  { label: "Map", icon: MapPin, path: "/dashboard/map" },
+  { label: "Report", icon: FilePlus2, path: "/dashboard/create" },
+  { label: "Complaints", icon: MessageCircleWarning, path: "/dashboard/complaints" },
   { label: "Challenges", icon: Swords, path: "/dashboard/challenges" },
   { label: "Profile", icon: User, path: "/dashboard/profile" },
 ];
@@ -42,7 +44,7 @@ const Sidebar = () => {
                 }`
               }
             >
-              <Icon className="w-6 h-6 shrink-0" strokeWidth={1.5} />
+              <Icon className="w-5 h-5 shrink-0" strokeWidth={1.5} />
               {expanded && (
                 <span className="text-sm font-medium whitespace-nowrap">
                   {label}

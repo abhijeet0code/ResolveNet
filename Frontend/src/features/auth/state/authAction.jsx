@@ -22,9 +22,9 @@ export const registerUser = createAsyncThunk(
   async (credentials, thunkApi) => {
     try {
       let res = await axiosInstance.post("/api/auth/register/", credentials);
+      // RegisterView is a plain CreateAPIView -> flat response, not nested under "data"
       console.log("register",res);
-      
-      return res.data.data;
+      return res.data;
     } catch (error) {
       return thunkApi.rejectWithValue(
         error.response?.data || "Registration failed"
@@ -38,7 +38,7 @@ export const loggedUser = createAsyncThunk(
   async (_, thunkApi) => {
     try {
       let res = await axiosInstance.get("/api/auth/me/");
-      console.log(res);
+      console.log("loggedUser",res);
       
       return res.data;
     }  catch (error) {

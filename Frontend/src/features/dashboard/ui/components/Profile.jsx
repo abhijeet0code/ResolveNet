@@ -8,10 +8,9 @@ import {
   Bookmark,
   Award,
   Image as ImageIcon,
-  BadgeCheck,
   Inbox,
 } from "lucide-react";
-import axiosInstance from "../../../../config/axiosInstance"
+import axiosInstance from "../../../../config/axiosInstance";
 
 // static for now — move to backend-driven data once the badges API exists
 const badgeDefs = [
@@ -35,6 +34,7 @@ const tabs = [
 const Profile = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth?.user);
+  const profile = user?.profile; // nested profile data from /me/
 
   const [activeTab, setActiveTab] = useState("reports");
   const [reports, setReports] = useState([]);
@@ -48,8 +48,8 @@ const Profile = () => {
       setLoading(true);
       setError("");
       try {
-        const res = await axiosInstance.get("/reports/mine/");
-        setReports(res.data);
+        const res = await axiosInstance.get("/api/posts/mine/");
+        setReports(res.data.results || res.data);
       } catch (err) {
         setError("Couldn't load your reports.");
       } finally {
@@ -97,37 +97,32 @@ const Profile = () => {
         <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12 sm:-mt-14">
           {/* Avatar */}
           <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-card border-4 border-background ring-2 ring-accent-light flex items-center justify-center overflow-hidden shrink-0">
-            {user?.profile_picture ? (
+            {profile?.avatar_url ? (
               <img
-                src={user.profile_picture}
-                alt={user.full_name}
+                src={profile.avatar_url}
+                alt={profile.full_name}
                 className="w-full h-full object-cover"
               />
             ) : (
               <span className="text-2xl sm:text-3xl font-semibold text-text-secondary">
-                {user?.full_name?.[0]?.toUpperCase() ?? "?"}
+                {profile?.full_name?.[0]?.toUpperCase() ?? "?"}
               </span>
             )}
           </div>
 
           <div className="flex-1 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 pb-1">
             <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-lg sm:text-xl font-semibold text-text-primary">
-                  {user?.full_name || "Your Name"}
-                </h1>
-                {user?.is_verified && (
-                  <BadgeCheck className="w-4 h-4 text-success" strokeWidth={2} />
-                )}
-              </div>
+              <h1 className="text-lg sm:text-xl font-semibold text-text-primary">
+                {profile?.full_name || "Your Name"}
+              </h1>
               <p className="text-sm text-text-secondary">
-                @{user?.username || "your.username"}
+                @{profile?.username || "username"}
               </p>
             </div>
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate("/profile-setup")}
+                onClick={() => navigate("/dashboard/profile-setup")}
                 className="bg-primary hover:bg-primary-light text-white text-sm font-medium rounded-md px-4 py-2 transition-colors"
               >
                 Edit Profile
@@ -152,18 +147,19 @@ const Profile = () => {
         {/* Bio */}
         <div className="mt-5 px-1">
           <p className="text-sm text-text-primary leading-relaxed">
-            {user?.bio || "No bio added yet."}
+            {profile?.bio || "No bio added yet."}
           </p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-text-secondary">
-            {user?.city && (
+            {profile?.city && (
               <span className="flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5" />
-                {user.city}
+                {profile.city}
+                {profile.state ? `, ${profile.state}` : ""}
               </span>
             )}
             <span className="flex items-center gap-1">
               <LinkIcon className="w-3.5 h-3.5" />
-              resolvenet.org/{user?.username || "profile"}
+              resolvenet.org/{profile?.username || "profile"}
             </span>
           </div>
         </div>
@@ -233,10 +229,10 @@ const Profile = () => {
                       key={item.id}
                       className="aspect-square bg-card border border-border rounded-sm sm:rounded-md overflow-hidden flex items-center justify-center"
                     >
-                      {item.image ? (
+                      {item.media?.[0]?.image_url ? (
                         <img
-                          src={item.image}
-                          alt={item.title || "Report"}
+                          src={item.media[0].image_url}
+                          alt={item.media[0].alt_text || item.caption}
                           className="w-full h-full object-cover"
                         />
                       ) : (

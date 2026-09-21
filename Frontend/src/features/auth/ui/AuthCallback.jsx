@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabase";
 import { toast } from "react-toastify";
+import LoadingPage from "../../../components/LoadingPage";
 
 const AuthCallback = () => {
 
@@ -56,7 +57,7 @@ const AuthCallback = () => {
 
     }, [navigate]);
 
-    return <p>Signing in...</p>;
+    return <LoadingPage/>
 };
 
 export default AuthCallback;

@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { loginUser, registerUser } from "../state/authAction";
+import { toast } from "react-toastify";
 
 // LOGIN FORM HOOK
 export const useLoginForm = () => {
@@ -21,7 +22,9 @@ export const useLoginForm = () => {
 
     if (loginUser.fulfilled.match(result)) {
       localStorage.setItem("token", result.payload.token);
+      
       navigate("/dashboard");
+      toast.success("Login successful!");
     } else {
       form.setError("password", {
         type: "manual",
@@ -33,15 +36,13 @@ export const useLoginForm = () => {
   return { ...form, onSubmit: form.handleSubmit(onSubmit) };
 };
 
-// REGISTER FORM HOOK (FIXED)
+// REGISTER FORM HOOK
 export const useRegisterForm = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const form = useForm({
     defaultValues: {
-      username: "",
-      mobile: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -52,27 +53,24 @@ export const useRegisterForm = () => {
   const password = form.watch("password");
 
   const onSubmit = async (data) => {
-    // Backend expected keys pass ho rahi hain
     const payload = {
-      username: data.username,
       email: data.email,
-      phone_number: data.mobile,
       password: data.password,
-      confirm_password: data.confirmPassword, // Added missing field
+      confirm_password: data.confirmPassword,
     };
 
     const result = await dispatch(registerUser(payload));
 
     if (registerUser.fulfilled.match(result)) {
+      toast.success("Registration successful! Please check your email to verify your account.");
       navigate("/login");
     } else {
       form.setError("email", {
         type: "manual",
         message:
           result.payload?.confirm_password?.[0] ||
-          result.payload?.username?.[0] ||
           result.payload?.email?.[0] ||
-          "Registration failed. Try a different username/email.",
+          "Registration failed. Try a different email.",
       });
     }
   };
