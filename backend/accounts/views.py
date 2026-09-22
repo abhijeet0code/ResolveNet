@@ -20,6 +20,7 @@ from feedback_main.supabase_storage import (
 )
 
 from .utils import get_embedding
+from rest_framework.authtoken.models import Token
 
 
 class RegisterView(generics.CreateAPIView):
@@ -50,6 +51,16 @@ class LoginView(APIView):
                 return Response({'token': token.key, 'username': user.username})
 
         return Response({'error': 'Invalid credentials'}, status=400)
+
+class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            request.user.auth_token.delete()
+            return Response({'message': 'Logged out successfully'}, status=200)
+        except Exception:
+            return Response({'error': 'Something went wrong'}, status=400)
 
 
 class CurrentUserView(APIView):
