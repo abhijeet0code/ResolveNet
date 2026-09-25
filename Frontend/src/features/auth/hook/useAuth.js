@@ -22,7 +22,8 @@ export const useLoginForm = () => {
 
     if (loginUser.fulfilled.match(result)) {
       localStorage.setItem("token", result.payload.token);
-      
+      localStorage.setItem("tokenType", "Token"); // DRF TokenAuthentication
+
       navigate("/dashboard");
       toast.success("Login successful!");
     } else {

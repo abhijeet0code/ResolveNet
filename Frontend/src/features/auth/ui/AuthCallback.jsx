@@ -5,59 +5,54 @@ import { toast } from "react-toastify";
 import LoadingPage from "../../../components/LoadingPage";
 
 const AuthCallback = () => {
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
+  useEffect(() => {
+    const finishLogin = async () => {
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
 
-    useEffect(() => {
+      if (error || !session) {
+        console.error("Login failed");
+        navigate("/login");
+        return;
+      }
 
-        const finishLogin = async () => {
+      const token = session.access_token;
 
-            const {
-                data: { session },
-                error,
-            } = await supabase.auth.getSession();
+      try {
+        const response = await fetch("http://localhost:8000/api/auth/me/", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-            if (error || !session) {
-                console.error("Login failed");
-                navigate("/login");
-                return;
-            }
+        if (!response.ok) {
+          throw new Error("Django authentication failed");
+        }
 
-             const token = session.access_token;
+        const user = await response.json();
 
-            try {
-                const response = await fetch(
-                    "http://localhost:8000/api/auth/me/",
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
-                if (!response.ok) {
-                    throw new Error("Django authentication failed");
-                }
-                const user = await response.json();
-                toast.success("User LoggedIn successfully")
-                navigate("/dashboard");
+        // Token aur uska type dono save karo, taaki axiosInstance
+        // sahi prefix (Bearer) use kare Supabase requests ke liye
+        localStorage.setItem("token", token);
+        localStorage.setItem("tokenType", "Bearer");
 
-            } catch (error) {
-                console.error(error);
+        toast.success("User LoggedIn successfully");
+        navigate("/dashboard");
+      } catch (error) {
+        console.error(error);
+        navigate("/login");
+      }
+    };
 
-                navigate("/login");
-            }
+    finishLogin();
+  }, [navigate]);
 
-
-        };
-
-        
-
-        finishLogin();
-
-    }, [navigate]);
-
-    return <LoadingPage/>
+  return <LoadingPage />;
 };
 
 export default AuthCallback;
