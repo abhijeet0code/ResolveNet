@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, MapPin, Bell, User, X } from "lucide-react";
+import {MapPin, Bell, User, X } from "lucide-react";
 import logo from "../../assets/ResolveNet-favicon-white-detail.png"
 
 
@@ -29,34 +29,9 @@ const UpperNavbar = () => {
           </h1>
         </div>
 
-        {/* Search Bar - always visible on desktop */}
-        <div className="hidden md:flex flex-1 max-w-xl">
-          <div className="flex items-center gap-2 w-full bg-card border border-border rounded-md px-3 py-2">
-            <Search className="w-4 h-4 text-text-muted shrink-0" />
-            <input
-              type="text"
-              placeholder="Search complaints, locations, or keywords"
-              className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Right Section */}
-        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-          {/* Mobile search toggle */}
-          <button
-            className="md:hidden"
-            onClick={() => setShowSearch((prev) => !prev)}
-          >
-            {showSearch ? (
-              <X className="w-5 h-5 text-text-secondary" />
-            ) : (
-              <Search className="w-5 h-5 text-text-secondary" />
-            )}
-          </button>
-
+        <div className="flex gap-[clamp(2rem,4vw,7rem)] ml-[clamp(2rem,10vh,rem)] ">
           {/* Location - text on desktop, icon only on mobile */}
-          <div className="hidden sm:flex items-center gap-1 border border-border rounded-md px-3 py-2 text-sm text-text-secondary">
+          <div className="hidden  sm:flex items-center gap-1 border border-border rounded-md px-3 py-2 text-sm text-text-secondary">
             <MapPin className="w-4 h-4" />
             <span>Ranchi</span>
           </div>
@@ -74,22 +49,9 @@ const UpperNavbar = () => {
             <User className="w-4 h-4 sm:w-5 sm:h-5 text-text-secondary" />
           </button>
         </div>
-      </div>
+     </div>
 
-      {/* Mobile search row - appears below navbar when toggled */}
-      {showSearch && (
-        <div className="md:hidden px-4 pb-3">
-          <div className="flex items-center gap-2 bg-card border border-border rounded-md px-3 py-2">
-            <Search className="w-4 h-4 text-text-muted shrink-0" />
-            <input
-              type="text"
-              placeholder="Search complaints, locations, or keywords"
-              className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-muted outline-none"
-              autoFocus
-            />
-          </div>
-        </div>
-      )}
+      
     </nav>
   );
 };
