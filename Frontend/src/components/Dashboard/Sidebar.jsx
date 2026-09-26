@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home,
-  MapPin,
+  Search,
   FilePlus2,
   MessageCircleWarning,
   Swords,
@@ -12,7 +12,7 @@ import {
 
 const navItems = [
   { label: "Home", icon: Home, path: "/dashboard" },
-  { label: "Map", icon: MapPin, path: "/dashboard/map" },
+  { label: "Search", icon: Search, path: "/dashboard/map" },
   { label: "Report", icon: FilePlus2, path: "/dashboard/create" },
   { label: "Complaints", icon: MessageCircleWarning, path: "/dashboard/complaints" },
   { label: "Challenges", icon: Swords, path: "/dashboard/challenges" },
