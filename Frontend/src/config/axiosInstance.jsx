@@ -9,8 +9,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    const tokenType = localStorage.getItem("tokenType") || "Token"; // default DRF Token
-
+    const tokenType = localStorage.getItem("tokenType") || "Bearer"; 
     if (token) {
       config.headers.Authorization = `${tokenType} ${token}`;
     }
