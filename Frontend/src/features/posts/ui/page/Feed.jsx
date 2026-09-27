@@ -39,6 +39,7 @@ const Feed = () => {
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="aspect-square bg-card border border-border rounded-xl animate-pulse" />
           ))}
+          
         </div>
       ) : error ? (
         <p className="text-sm text-error text-center py-10">{error}</p>
