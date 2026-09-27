@@ -34,7 +34,7 @@ const PostComments = ({ postId }) => {
   };
 
   return (
-    <div className="border-t border-border px-4 py-3 flex flex-col gap-3">
+    <div className="border-t border-border px-4 py-3 mt-4 flex flex-col gap-3">
       {loading ? (
         <p className="text-xs text-text-muted">Loading comments...</p>
       ) : comments.length === 0 ? (

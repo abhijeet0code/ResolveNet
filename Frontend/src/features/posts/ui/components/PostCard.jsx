@@ -12,13 +12,8 @@ const PostCard = ({ post }) => (
       createdAt={post.created_at}
     />
 
-    <PostImageCarousel media={post.media} caption={post.caption} />
 
-    <div className="px-4 pt-3">
-      <p className="text-sm text-text-primary leading-relaxed">
-        <span className="font-medium">{post.author?.username}</span> {post.caption}
-      </p>
-    </div>
+    <PostImageCarousel media={post.media} />
 
     <PostActions
       postId={post.id}
@@ -27,6 +22,14 @@ const PostCard = ({ post }) => (
       initialSaved={post.is_saved}
       commentsCount={post.comments_count}
     />
+
+    <div className="px-4 pt-3 pb-4">
+      <p className="text-sm text-text-primary leading-relaxed">
+        <span className="font-medium">{post.author?.username}</span> {post.caption}
+      </p>
+    </div>
+
+    
   </div>
 );
 
