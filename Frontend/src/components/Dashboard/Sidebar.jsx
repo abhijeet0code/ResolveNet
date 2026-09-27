@@ -12,7 +12,7 @@ import {
 
 const navItems = [
   { label: "Home", icon: Home, path: "/dashboard" },
-  { label: "Search", icon: Search, path: "/dashboard/map" },
+  { label: "Search", icon: Search, path: "/dashboard/search" },
   { label: "Report", icon: FilePlus2, path: "/dashboard/create" },
   { label: "Complaints", icon: MessageCircleWarning, path: "/dashboard/complaints" },
   { label: "Challenges", icon: Swords, path: "/dashboard/challenges" },
