@@ -1,9 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { X } from "lucide-react";
 
-// Adjust this import to wherever your configured Axios instance lives,
-// e.g. `import api from "../api/axios";` — using it (rather than plain
-// axios) means your JWT auth headers / base URL are already attached.
+
 import api from "../../../../config/axiosInstance";
 
 import SearchBar from "../components/SearchBar";
