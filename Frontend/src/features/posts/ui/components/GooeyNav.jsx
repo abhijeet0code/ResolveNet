@@ -11,8 +11,12 @@ const GooeyNav = ({
   particleR = 100,
   timeVariance = 300,
   colors = [1, 2, 3, 1, 2, 3, 1, 4],
-  initialActiveIndex = 0
+  initialActiveIndex = 0,
+  sendActiveIndex,
 }) => {
+
+
+ 
   const containerRef = useRef(null);
   const navRef = useRef(null);
   const filterRef = useRef(null);
@@ -100,7 +104,9 @@ const GooeyNav = ({
     if (activeIndex === index) return;
 
     setActiveIndex(index);
+    sendActiveIndex(index)
     updateEffectPosition(liEl);
+    
 
     if (filterRef.current) {
       const particles = filterRef.current.querySelectorAll('.particle');
@@ -117,6 +123,7 @@ const GooeyNav = ({
     if (filterRef.current) {
       makeParticles(filterRef.current);
     }
+   
   };
 
   const handleKeyDown = (e, index) => {
@@ -151,11 +158,12 @@ const GooeyNav = ({
   return (
     <div className="gooey-nav-container" ref={containerRef}>
       <nav>
-        <ul ref={navRef}>
+        <ul ref={navRef} >
           {items.map((item, index) => (
-            <li key={index} className={activeIndex === index ? 'active' : ''}>
+            <li key={index} className={activeIndex === index ? 'active' : ''} >
               <a href={item.href} onClick={e => handleClick(e, index)} onKeyDown={e => handleKeyDown(e, index)}>
                 {item.label}
+                
               </a>
             </li>
           ))}
@@ -166,5 +174,6 @@ const GooeyNav = ({
     </div>
   );
 };
+
 
 export default GooeyNav;

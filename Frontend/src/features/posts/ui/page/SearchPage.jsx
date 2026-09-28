@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { X } from "lucide-react";
+import GooeyNav from '../components/GooeyNav'
 
 
 import api from "../../../../config/axiosInstance";
 
 import SearchBar from "../components/SearchBar";
 import { SkeletonPostCard, SkeletonSearchRow } from "../components/SkeletonPostCard";
+import { UNSAFE_getTurboStreamSingleFetchDataStrategy } from "react-router-dom";
 
 const RECENT_KEY = "resolvenet_recent_searches";
 const MAX_RECENT = 6;
@@ -23,6 +25,19 @@ const SearchPage=() => {
   const debounceRef = useRef(null);
 
   const showingResults = query.trim().length > 0;
+
+  const items = [
+  { label: "Posts", href: "#" },
+  { label: "Accounts", href: "#" },
+  { label: "Near me", href: "#" },
+];
+  const [selectedIndx,setSelectedIndx]=useState(0)
+
+
+  const receiveActiveIndex = (index) => {
+    console.log(index)
+    setSelectedIndx(index)
+  }
 
   // Load recent searches from localStorage once
   useEffect(() => {
@@ -112,22 +127,23 @@ const SearchPage=() => {
           onClear={() => setQuery("")}
           autoFocus
           placeholder="Search issues, categories, people"
+          
         />
       </div>
 
-      <div className="flex justify-between m-1 sticky grid-cols-3 bg-card h-10 item-center">
-        <button className="text-center bg-border w-full border-accent-light rounded-md ">
-          Posts
-        </button>
-          
-        <button className="text-center bg-border w-full border-accent-light rounded-md">
-          Accounts
-        </button>
-
-        <button className="text-center bg-border w-full border-accent-light rounded-md">
-          Near You
-
-        </button>
+      <div  className=" bg-accent-light m-2 ">
+        <GooeyNav
+        
+          items={items}
+          sendActiveIndex={receiveActiveIndex}
+          particleCount={12}
+          particleDistances={[90, 10]}
+          particleR={200}
+          initialActiveIndex={0}
+          animationTime={600}
+          timeVariance={400}
+          colors={[1, 2, 3, 1, 2, 3, 1, 4]}
+        />
       </div>
 
       <div className="px-4 py-4">
