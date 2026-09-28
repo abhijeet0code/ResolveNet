@@ -115,6 +115,21 @@ const SearchPage=() => {
         />
       </div>
 
+      <div className="flex justify-between m-1 sticky grid-cols-3 bg-card h-10 item-center">
+        <button className="text-center bg-border w-full border-accent-light rounded-md ">
+          Posts
+        </button>
+          
+        <button className="text-center bg-border w-full border-accent-light rounded-md">
+          Accounts
+        </button>
+
+        <button className="text-center bg-border w-full border-accent-light rounded-md">
+          Near You
+
+        </button>
+      </div>
+
       <div className="px-4 py-4">
         {/* Recent searches — only when the query is empty */}
         {!showingResults && recent.length > 0 && (
