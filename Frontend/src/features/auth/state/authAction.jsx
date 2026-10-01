@@ -46,3 +46,15 @@ export const loggedUser = createAsyncThunk(
     }
   }
 );
+
+export const logoutUser = createAsyncThunk("auth/logout", async () => {
+  try {
+    await axiosInstance.post("/api/auth/logout/");
+  } catch (error) {
+    // server error / expired token ho to bhi frontend se logout hona chahiye
+  } finally {
+    // request ke baad clear karna hai, warna interceptor ko token nahi milega
+    localStorage.removeItem("token");
+    localStorage.removeItem("tokenType");
+  }
+});
