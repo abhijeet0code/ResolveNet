@@ -8,6 +8,9 @@ from .views import (
     PostLikeToggleView,
     PostSaveToggleView,
     CommentListCreateView,
+    SuggestionListCreateView,
+    SuggestionReplyListCreateView,
+    SuggestionUpvoteToggleView,
 )
 
 urlpatterns = [
@@ -18,4 +21,7 @@ urlpatterns = [
     path("<uuid:post_id>/like/", PostLikeToggleView.as_view(), name="post-like"),
     path("<uuid:post_id>/save/", PostSaveToggleView.as_view(), name="post-save"),
     path("<uuid:post_id>/comments/", CommentListCreateView.as_view(), name="post-comments"),
+    path("<uuid:post_id>/suggestions/", SuggestionListCreateView.as_view(), name="post-suggestions"),
+    path("suggestions/<uuid:suggestion_id>/replies/", SuggestionReplyListCreateView.as_view(), name="suggestion-replies"),
+    path("suggestions/<uuid:suggestion_id>/upvote/", SuggestionUpvoteToggleView.as_view(), name="suggestion-upvote"),
 ]

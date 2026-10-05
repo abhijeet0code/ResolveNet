@@ -1,6 +1,6 @@
 import React from "react";
 import PostAuthorHeader from "./PostAuthorHeader";
-import PostImageCarousel from "./PostImageCarousel ";
+import PostImageCarousel from "./PostImageCarousel";
 import PostActions from "../../hook/Postactions";
 
 const PostCard = ({ post }) => (
@@ -16,11 +16,13 @@ const PostCard = ({ post }) => (
     <PostImageCarousel media={post.media} />
 
     <PostActions
+      post={post}
       postId={post.id}
       initialLiked={post.is_liked}
       initialLikesCount={post.likes_count}
       initialSaved={post.is_saved}
       commentsCount={post.comments_count}
+      initialSuggestionsCount={post.suggestions_count}
     />
 
     <div className="px-4 pt-3 pb-4">

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from feedback_main.supabase_storage import get_public_image_url
-from .models import Post, PostMedia, Comment
+from .models import Post, PostMedia, Comment, Suggestion
 
 
 class PostMediaSerializer(serializers.ModelSerializer):
@@ -46,11 +46,53 @@ class CommentSerializer(serializers.ModelSerializer):
         return _author_payload(comment.author)
 
 
+class SuggestionSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+    upvotes_count = serializers.SerializerMethodField()
+    is_upvoted = serializers.SerializerMethodField()
+    replies_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Suggestion
+        fields = [
+            "id",
+            "author",
+            "text",
+            "parent",
+            "upvotes_count",
+            "is_upvoted",
+            "replies_count",
+            "created_at",
+        ]
+        read_only_fields = ["id", "author", "parent", "created_at"]
+
+    def get_author(self, suggestion):
+        return _author_payload(suggestion.author)
+
+    # View annotate karta hai (fast). Annotate nahi hua (jaise create response) to fallback query.
+    def get_upvotes_count(self, suggestion):
+        annotated = getattr(suggestion, "upvotes_total", None)
+        return annotated if annotated is not None else suggestion.upvotes.count()
+
+    def get_is_upvoted(self, suggestion):
+        annotated = getattr(suggestion, "upvoted_by_me", None)
+        if annotated is not None:
+            return annotated
+        request = self.context.get("request")
+        user = request.user if request else None
+        return bool(user and suggestion.upvotes.filter(user=user).exists())
+
+    def get_replies_count(self, suggestion):
+        annotated = getattr(suggestion, "replies_total", None)
+        return annotated if annotated is not None else suggestion.replies.count()
+
+
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     media = PostMediaSerializer(many=True, read_only=True)
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
+    suggestions_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
 
@@ -69,6 +111,7 @@ class PostSerializer(serializers.ModelSerializer):
             "media",
             "likes_count",
             "comments_count",
+            "suggestions_count",
             "is_liked",
             "is_saved",
             "created_at",
@@ -81,6 +124,7 @@ class PostSerializer(serializers.ModelSerializer):
             "status",
             "likes_count",
             "comments_count",
+            "suggestions_count",
             "is_liked",
             "is_saved",
             "created_at",
@@ -95,6 +139,10 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_comments_count(self, post):
         return post.comments.count()
+
+    def get_suggestions_count(self, post):
+        # sirf top-level suggestions gine jaate hain, replies nahi
+        return post.suggestions.filter(parent__isnull=True).count()
 
     def _request_user(self):
         request = self.context.get("request")
