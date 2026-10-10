@@ -360,5 +360,5 @@ const ProfileSetupWizard = ({ isEdit = false }) => {
     </div>
   );
 };
-
+  
 export default ProfileSetupWizard;

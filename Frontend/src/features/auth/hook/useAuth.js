@@ -1,7 +1,14 @@
+
 import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { loginUser, registerUser } from "../state/authAction";
+
+import {
+  loginUser,
+  loggedUser,
+  registerUser,
+} from "../state/authAction";
+
 import { toast } from "react-toastify";
 
 // LOGIN FORM HOOK
@@ -18,14 +25,24 @@ export const useLoginForm = () => {
   });
 
   const onSubmit = async (data) => {
+    // Step 1: Login
     const result = await dispatch(loginUser(data));
 
     if (loginUser.fulfilled.match(result)) {
+      // Step 2: Save token
       localStorage.setItem("token", result.payload.token);
-      localStorage.setItem("tokenType", "Token"); // DRF TokenAuthentication
+      localStorage.setItem("tokenType", "Token");
 
-      navigate("/dashboard");
-      toast.success("Login successful!");
+      // Step 3: Get complete user data from backend
+      const userResult = await dispatch(loggedUser());
+
+      // Step 4: Only navigate after user data is loaded
+      if (loggedUser.fulfilled.match(userResult)) {
+        navigate("/dashboard");
+        toast.success("Login successful!");
+      } else {
+        toast.error("Unable to load your profile. Please try again.");
+      }
     } else {
       form.setError("password", {
         type: "manual",
@@ -34,8 +51,12 @@ export const useLoginForm = () => {
     }
   };
 
-  return { ...form, onSubmit: form.handleSubmit(onSubmit) };
+  return {
+    ...form,
+    onSubmit: form.handleSubmit(onSubmit),
+  };
 };
+
 
 // REGISTER FORM HOOK
 export const useRegisterForm = () => {
@@ -63,7 +84,10 @@ export const useRegisterForm = () => {
     const result = await dispatch(registerUser(payload));
 
     if (registerUser.fulfilled.match(result)) {
-      toast.success("Registration successful! Please check your email to verify your account.");
+      toast.success(
+        "Registration successful! Please check your email to verify your account."
+      );
+
       navigate("/login");
     } else {
       form.setError("email", {
@@ -76,5 +100,10 @@ export const useRegisterForm = () => {
     }
   };
 
-  return { ...form, onSubmit: form.handleSubmit(onSubmit), password };
+  return {
+    ...form,
+    onSubmit: form.handleSubmit(onSubmit),
+    password,
+  };
 };
+

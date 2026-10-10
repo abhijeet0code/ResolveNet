@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { Heart, MessageCircle, Bookmark, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Bookmark, Share2, Lightbulb } from "lucide-react";
 import axiosInstance from "../../../config/axiosInstance"; 
 import PostComments from "../ui/components/PostComments";
+import SuggestionModal from "../ui/components/SuggestionModal";
 import PulseHeart from './PulseHeart';
 
 
-const PostActions = ({ postId, initialLiked, initialLikesCount, initialSaved, commentsCount }) => {
+const PostActions = ({ post, postId, initialLiked, initialLikesCount, initialSaved, commentsCount, initialSuggestionsCount = 0 }) => {
   const [liked, setLiked] = useState(initialLiked);
   const [likesCount, setLikesCount] = useState(initialLikesCount);
   const [saved, setSaved] = useState(initialSaved);
   const [showComments, setShowComments] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionsCount, setSuggestionsCount] = useState(initialSuggestionsCount);
 
   const toggleLike = async () => {
     // optimistic update
@@ -83,6 +86,16 @@ const PostActions = ({ postId, initialLiked, initialLikesCount, initialSaved, co
           <span className="text-sm text-text-secondary">{commentsCount}</span>
         </button>
 
+        {/* NEW: Suggestions button */}
+        <button
+          onClick={() => setShowSuggestions(true)}
+          className="flex items-center gap-1.5"
+          aria-label="Open suggestions"
+        >
+          <Lightbulb className="w-5 h-5 text-text-secondary hover:scale-110 transition-transform duration-200" strokeWidth={1.8} />
+          <span className="text-sm text-text-secondary">{suggestionsCount}</span>
+        </button>
+
         <button onClick={handleShare}>
           <Share2 className="w-5 h-5 text-text-secondary hover:scale-110 transition-transform duration-200" strokeWidth={1.8} />
         </button>
@@ -96,6 +109,15 @@ const PostActions = ({ postId, initialLiked, initialLikesCount, initialSaved, co
       </div>
 
       {showComments && <PostComments postId={postId} />}
+
+      {/* NEW: Suggestions modal */}
+      {showSuggestions && (
+        <SuggestionModal
+          post={post}
+          onClose={() => setShowSuggestions(false)}
+          onCountChange={(delta) => setSuggestionsCount((c) => c + delta)}
+        />
+      )}
     </div>
   );
 };

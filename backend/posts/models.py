@@ -108,3 +108,47 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ["created_at"]
+
+        # ---- posts/models.py ke END mein ye paste karo (existing code ko mat chhedo) ----
+
+class Suggestion(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="suggestions")
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="post_suggestions",
+    )
+    # null = top-level suggestion, set = reply (sirf 1 level deep, Instagram jaisa)
+    parent = models.ForeignKey(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="replies",
+    )
+    text = models.TextField(max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+        indexes = [models.Index(fields=["post", "parent"])]
+
+
+class SuggestionUpvote(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    suggestion = models.ForeignKey(
+        Suggestion, on_delete=models.CASCADE, related_name="upvotes"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="suggestion_upvotes",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # ek user ek suggestion ko ek hi baar upvote kar sakta hai
+        unique_together = ("suggestion", "user")
