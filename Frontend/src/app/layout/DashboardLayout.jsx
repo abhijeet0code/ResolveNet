@@ -15,7 +15,7 @@ const DashboardLayout = () => {
   return (
     <div className="flex flex-col h-screen bg-background">
 
-      {/* Navbar */}
+
       <UpperNavbar />
 
       {/* Dashboard */}

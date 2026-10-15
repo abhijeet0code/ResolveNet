@@ -97,6 +97,7 @@ const AppRoute = () => {
 ]);
 
   return <RouterProvider router={router} />;
+  
 };
 
 export default AppRoute;
