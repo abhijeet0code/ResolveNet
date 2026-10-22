@@ -26,7 +26,9 @@ The platform brings together technology, collaboration, and AI-assisted analysis
 
 <!-- Add your project banner at docs/assets/resolvenet-banner.png -->
 <p align="center">
-  <img src="docs/assets/resolvenet-banner.png" alt="ResolveNet — Connecting Challenges. Creating Solutions." width="100%">
+  <img alt="ResolveNet — Connecting Challenges. Creating Solutions." width="100%" src="https://github.com/user-attachments/assets/8e21ab8f-97d6-4d3d-8a14-b1fd0ac25444" />
+
+  
 </p>
 
 ## The Problem We're Solving
