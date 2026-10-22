@@ -42,6 +42,10 @@ Many community problems are not caused by a lack of awareness. They remain unres
 - **Difficult prioritization:** Important challenges can be difficult to identify among large volumes of reports.
 - **Limited visibility:** People may not know what happens after an issue is reported.
 
+<p align="center">
+<img alt="ResolveNet — Feed overview and citizen complaint posts ." width="100%" src="https://github.com/user-attachments/assets/95eac858-04b7-4f15-9eea-5ab3642110f3" />
+</p>
+
 
 
 ResolveNet is designed to bring these activities into one connected workflow.
