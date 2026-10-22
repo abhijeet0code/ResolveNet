@@ -27,7 +27,8 @@ The platform brings together technology, collaboration, and AI-assisted analysis
 <!-- Add your project banner at docs/assets/resolvenet-banner.png -->
 <p align="center">
   <img alt="ResolveNet — Connecting Challenges. Creating Solutions." width="100%" src="https://github.com/user-attachments/assets/8e21ab8f-97d6-4d3d-8a14-b1fd0ac25444" />
-
+  <img alt="ResolveNet — Problem chart." width="100%" src="https://github.com/user-attachments/assets/33c9fc72-9038-41a7-8bc0-af73f15f62d3" />
+  
   
 </p>
 
@@ -40,6 +41,8 @@ Many community problems are not caused by a lack of awareness. They remain unres
 - **Limited collaboration:** Communities may lack a straightforward way to connect with researchers, technical experts, or potential solution providers.
 - **Difficult prioritization:** Important challenges can be difficult to identify among large volumes of reports.
 - **Limited visibility:** People may not know what happens after an issue is reported.
+
+
 
 ResolveNet is designed to bring these activities into one connected workflow.
 
