@@ -81,6 +81,29 @@ Consider a neighbourhood experiencing repeated water wastage.
 
 This illustrates the intended workflow; not every stage is currently automated.
 
+## Alexa+ Style Conversational Demo
+
+ResolveNet includes a **simulated conversational assistant prototype** at `/alexa-plus`. It demonstrates how people could use natural-language prompts to explore civic issue reports, check example statuses, see high-priority examples, and get reporting guidance.
+
+### Run the demo locally
+
+From the repository root:
+
+```bash
+cd Frontend
+npm install
+npm run dev
+```
+
+Open the local Vite URL and visit `/alexa-plus`.
+
+### Prototype boundaries
+
+- Uses hard-coded sample reports (RN-1042, RN-1038, RN-1029); responses are deterministic and do not query PostgreSQL or the Django APIs.
+- Optional microphone input uses the browser's Web Speech API where supported. Browser permissions and compatibility apply.
+- No report is created, updated, or sent to the backend.
+- This is an Alexa+ **style simulation**, not an Amazon Alexa+ integration, Alexa skill, or MCP connection. Do not present it as an actual Alexa+ deployment.
+
 ## Technology Stack
 
 | Technology | Purpose |
