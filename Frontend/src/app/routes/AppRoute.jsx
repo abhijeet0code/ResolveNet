@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Mainlayout from "../layout/Mainlayout";
 import Home from "../../pages/Home";
-import AlexaPlusDemo from "../../pages/AlexaPlusDemo";
 import About from "../../pages/About";
+import AlexaPlusDemo from "../../pages/AlexaPlusDemo";
 import AuthLayout from "../layout/AuthLayout";
 import Register from "../../features/auth/ui/Register";
 import Login from "../../features/auth/ui/Login";
@@ -47,11 +47,11 @@ const AppRoute = () => {
             path: "about",
             element: <About />,
           },
-          {
-            path: "alexa-plus",
-            element: <AlexaPlusDemo />,
-          },
         ],
+      },
+      {
+        path: "alexa-plus",
+        element: <AlexaPlusDemo />,
       },
       {
         element: <AuthLayout />,
