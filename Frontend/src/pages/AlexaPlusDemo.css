@@ -1,0 +1,153 @@
+.alexa-demo-page {
+  --alexa-ink: #17251c;
+  --alexa-muted: #6b786e;
+  --alexa-line: #dfe6dd;
+  --alexa-green: #315c43;
+  --alexa-mint: #e9f3e8;
+  min-height: 100vh;
+  padding: 20px clamp(16px, 3vw, 44px) 24px;
+  color: var(--alexa-ink);
+  background:
+    radial-gradient(circle at 12% 8%, rgba(217, 235, 212, .62), transparent 26rem),
+    radial-gradient(circle at 90% 72%, rgba(232, 222, 192, .4), transparent 24rem),
+    #f8f8f2;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.alexa-demo-shell { width: min(1240px, 100%); margin: 0 auto; }
+.alexa-demo-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0 24px; }
+.alexa-brand { display: inline-flex; align-items: center; gap: 10px; color: var(--alexa-ink); text-decoration: none; font-size: 20px; font-weight: 760; letter-spacing: -.7px; }
+.alexa-brand > span:last-child > span { color: #62836b; }
+.alexa-brand-mark { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 13px; color: #fff; background: var(--alexa-green); }
+.alexa-topbar-actions { display: flex; align-items: center; gap: 12px; }
+.alexa-demo-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid #dce6da; border-radius: 99px; color: #536d57; background: rgba(255,255,255,.66); font-size: 12px; font-weight: 650; }
+.alexa-demo-badge > span, .alexa-online-dot { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: #6b9c6c; }
+.alexa-icon-button { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--alexa-line); border-radius: 12px; color: #56685a; background: #fff; cursor: pointer; }
+.alexa-icon-button:hover { background: #eef5ed; }
+.alexa-help-panel { margin: 0 0 18px auto; max-width: 500px; padding: 16px 18px; border: 1px solid #d9e6d8; border-radius: 16px; background: #fff; box-shadow: 0 12px 32px rgba(32, 55, 36, .07); }
+.alexa-help-panel strong { font-size: 14px; }
+.alexa-help-panel p { margin: 7px 0 0; color: var(--alexa-muted); font-size: 13px; line-height: 1.6; }
+.alexa-demo-grid { display: grid; grid-template-columns: minmax(0, .94fr) minmax(420px, 1.06fr); align-items: stretch; gap: clamp(30px, 5vw, 72px); }
+.alexa-intro-column { padding: 28px 0 20px; }
+.alexa-eyebrow { display: inline-flex; align-items: center; gap: 8px; color: #557c5c; font-size: 11px; font-weight: 800; letter-spacing: 1.6px; }
+.alexa-intro-column h1 { max-width: 560px; margin: 20px 0 16px; font-size: clamp(38px, 4.2vw, 58px); font-weight: 730; line-height: 1.06; letter-spacing: -2.9px; }
+.alexa-intro-column h1 em { color: #648c69; font-style: normal; }
+.alexa-intro-copy { max-width: 475px; margin: 0; color: #6b786e; font-size: 16px; line-height: 1.75; }
+.alexa-assistant-visual { position: relative; display: grid; place-items: center; width: min(100%, 500px); height: 270px; margin: 14px 0 12px; overflow: hidden; }
+.alexa-orbit { position: absolute; width: 230px; height: 230px; border: 1px solid rgba(102, 142, 107, .23); border-radius: 50%; }
+.alexa-orbit.orbit-two { width: 180px; height: 180px; border-style: dashed; border-color: rgba(102, 142, 107, .35); }
+.alexa-orb { position: relative; z-index: 1; display: grid; place-items: center; width: 118px; height: 118px; border: 1px solid rgba(255,255,255,.85); border-radius: 37px; color: #f9fff8; background: linear-gradient(145deg, #5d8966, #274b35); box-shadow: 0 20px 45px rgba(43, 83, 52, .24), inset 0 1px 0 rgba(255,255,255,.4); transform: rotate(-8deg); }
+.alexa-orb svg { transform: rotate(8deg); }
+.alexa-floating-chip { position: absolute; z-index: 2; display: inline-flex; align-items: center; gap: 7px; padding: 10px 12px; border: 1px solid rgba(218, 229, 216, .9); border-radius: 13px; color: #4d6351; background: rgba(255,255,255,.91); box-shadow: 0 10px 25px rgba(30, 55, 35, .07); font-size: 11px; font-weight: 680; }
+.alexa-floating-chip svg { color: #64876a; }
+.chip-one { top: 35px; left: 2%; }
+.chip-two { top: 95px; right: 0; }
+.chip-three { bottom: 29px; left: 18%; }
+.alexa-principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 4px; }
+.alexa-principles > div { display: flex; align-items: flex-start; gap: 9px; }
+.alexa-principles > div > span { display: grid; place-items: center; flex: 0 0 29px; height: 29px; border-radius: 10px; color: #507657; background: #e7f0e4; }
+.alexa-principles p { display: grid; gap: 4px; margin: 0; }
+.alexa-principles strong { font-size: 11px; line-height: 1.4; }
+.alexa-principles small { color: #7b867c; font-size: 10px; line-height: 1.45; }
+.alexa-chat-panel { display: flex; flex-direction: column; min-height: 700px; max-height: 780px; border: 1px solid rgba(218, 226, 216, .95); border-radius: 25px; overflow: hidden; background: rgba(255,255,255,.93); box-shadow: 0 28px 80px rgba(31, 55, 36, .10); }
+.alexa-chat-header { display: flex; align-items: center; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #edf0eb; }
+.alexa-chat-avatar, .alexa-message-avatar { display: grid; place-items: center; flex: 0 0 auto; color: #fff; background: #315c43; }
+.alexa-chat-avatar { width: 43px; height: 43px; border-radius: 15px; }
+.alexa-chat-title { display: grid; gap: 4px; min-width: 0; }
+.alexa-chat-title strong { font-size: 14px; }
+.alexa-chat-title > span { display: flex; align-items: center; gap: 6px; color: #7b877d; font-size: 11px; }
+.alexa-online-dot { width: 6px; height: 6px; }
+.alexa-reset-button { margin-left: auto; padding: 7px 10px; border: 1px solid #e2e8e0; border-radius: 10px; color: #68786b; background: #fff; font-size: 11px; cursor: pointer; }
+.alexa-reset-button:hover { background: #f3f7f1; }
+.alexa-demo-notice { display: flex; align-items: flex-start; gap: 9px; margin: 14px 18px 2px; padding: 10px 12px; border: 1px solid #e0eadb; border-radius: 12px; color: #60725f; background: #f4f8f1; }
+.alexa-demo-notice > span { display: grid; place-items: center; padding-top: 1px; color: #618264; }
+.alexa-demo-notice p { margin: 0; font-size: 11px; line-height: 1.55; }
+.alexa-demo-notice strong { color: #385d3d; }
+.alexa-messages { display: flex; flex: 1; flex-direction: column; gap: 16px; min-height: 190px; padding: 20px 18px 12px; overflow-y: auto; scroll-behavior: smooth; }
+.alexa-message-row { display: flex; align-items: flex-start; gap: 9px; width: 100%; }
+.alexa-message-row.user { justify-content: flex-end; }
+.alexa-message-avatar { width: 29px; height: 29px; border-radius: 10px; }
+.alexa-message-content { display: flex; flex-direction: column; gap: 8px; max-width: calc(100% - 40px); min-width: 0; }
+.alexa-message-row.user .alexa-message-content { align-items: flex-end; max-width: 88%; }
+.alexa-message-bubble { margin: 0; padding: 12px 14px; border: 1px solid #e8ede6; border-radius: 4px 15px 15px 15px; color: #48594c; background: #f7f9f5; font-size: 12px; line-height: 1.65; overflow-wrap: anywhere; }
+.alexa-message-row.user .alexa-message-bubble { border-color: #315c43; border-radius: 15px 4px 15px 15px; color: #fff; background: #315c43; }
+.alexa-issue-list { display: grid; gap: 8px; width: 100%; }
+.alexa-issue-card { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 12px; border: 1px solid #e2e9e0; border-radius: 14px; color: var(--alexa-ink); text-align: left; background: #fff; cursor: pointer; transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease; }
+.alexa-issue-card:hover { border-color: #b6ceb4; box-shadow: 0 8px 20px rgba(41, 70, 45, .06); transform: translateY(-1px); }
+.alexa-issue-icon { display: grid; place-items: center; flex: 0 0 31px; height: 31px; border-radius: 10px; color: #9a6c34; background: #fff2de; }
+.alexa-issue-icon.is-resolved { color: #4e8057; background: #eaf5e8; }
+.alexa-issue-copy { display: grid; flex: 1; gap: 5px; min-width: 0; }
+.alexa-issue-meta { color: #879188; font-size: 9px; font-weight: 750; letter-spacing: .35px; text-transform: uppercase; }
+.alexa-issue-copy strong { font-size: 11px; line-height: 1.4; }
+.alexa-issue-location { display: flex; align-items: center; gap: 4px; color: #78857a; font-size: 10px; }
+.alexa-issue-bottom { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 2px; color: #89928a; font-size: 9px; }
+.alexa-status { padding: 4px 7px; border-radius: 99px; font-size: 9px; font-weight: 720; }
+.alexa-status.high { color: #98632c; background: #fff0d8; }
+.alexa-status.review { color: #536f9b; background: #edf3fc; }
+.alexa-status.resolved { color: #43734b; background: #e9f5e8; }
+.alexa-issue-chevron { flex: 0 0 auto; margin-top: 8px; color: #9ba69b; }
+.alexa-prompt-area { padding: 4px 18px 14px; }
+.alexa-prompt-label { display: block; margin-bottom: 9px; color: #9aa49a; font-size: 9px; font-weight: 800; letter-spacing: 1.4px; }
+.alexa-prompt-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.alexa-prompt-chips button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border: 1px solid #e0e8dd; border-radius: 11px; color: #617263; background: #fff; font-size: 10px; text-align: left; cursor: pointer; }
+.alexa-prompt-chips button:hover, .alexa-prompt-chips button.active { border-color: #adc6ad; color: #345b3c; background: #f1f7ef; }
+.alexa-composer { display: flex; align-items: center; gap: 9px; margin: 0 16px; padding: 8px; border: 1px solid #dfe7dc; border-radius: 16px; background: #fbfcfa; }
+.alexa-composer input { flex: 1; width: 0; min-width: 0; padding: 9px 2px; border: 0; outline: none; color: #263b2b; background: transparent; font: inherit; font-size: 12px; }
+.alexa-composer input::placeholder { color: #a0aaa0; }
+.alexa-mic-button, .alexa-send-button { display: grid; place-items: center; flex: 0 0 auto; width: 37px; height: 37px; border: 0; border-radius: 12px; cursor: pointer; }
+.alexa-mic-button { color: #4f7355; background: #edf4ea; }
+.alexa-mic-button:hover, .alexa-mic-button.is-listening { color: #fff; background: #6d936c; }
+.alexa-send-button { color: #fff; background: #315c43; }
+.alexa-send-button:disabled { color: #9da99e; background: #e9eee7; cursor: not-allowed; }
+.alexa-voice-feedback { margin: 8px 20px 0; color: #69806a; font-size: 10px; line-height: 1.5; }
+.alexa-chat-footnote { margin: 10px 18px 15px; color: #a0a8a0; text-align: center; font-size: 9px; }
+.alexa-demo-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 25px 0 4px; color: #8a968a; font-size: 11px; }
+.alexa-demo-footer a { display: inline-flex; align-items: center; gap: 5px; color: #52735a; font-weight: 700; text-decoration: none; }
+.alexa-demo-footer a:hover { color: #274b35; }
+
+@media (max-width: 1000px) {
+  .alexa-demo-grid { grid-template-columns: minmax(0, .85fr) minmax(380px, 1.15fr); gap: 28px; }
+  .alexa-intro-column h1 { font-size: clamp(36px, 4.6vw, 48px); letter-spacing: -2px; }
+  .alexa-principles { grid-template-columns: 1fr; gap: 10px; }
+  .alexa-principles small { font-size: 11px; }
+  .alexa-assistant-visual { height: 235px; }
+}
+@media (max-width: 760px) {
+  .alexa-demo-page { padding: 12px 14px 18px; }
+  .alexa-demo-topbar { padding-bottom: 12px; }
+  .alexa-demo-grid { grid-template-columns: 1fr; gap: 20px; }
+  .alexa-intro-column { padding: 22px 0 0; }
+  .alexa-intro-column h1 { max-width: 570px; margin-top: 16px; font-size: clamp(38px, 10vw, 54px); }
+  .alexa-intro-copy { font-size: 14px; }
+  .alexa-assistant-visual { height: 220px; margin-top: 4px; }
+  .alexa-principles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .alexa-principles > div { flex-direction: column; }
+  .alexa-principles strong { font-size: 10px; }
+  .alexa-principles small { font-size: 9px; }
+  .alexa-chat-panel { min-height: 650px; max-height: 760px; border-radius: 21px; }
+  .alexa-demo-footer { align-items: flex-start; flex-direction: column; padding-top: 18px; }
+}
+@media (max-width: 430px) {
+  .alexa-demo-badge { padding: 7px 9px; font-size: 10px; }
+  .alexa-brand { font-size: 18px; }
+  .alexa-brand-mark { width: 34px; height: 34px; }
+  .alexa-assistant-visual { height: 190px; }
+  .alexa-orbit { width: 190px; height: 190px; }
+  .alexa-orbit.orbit-two { width: 150px; height: 150px; }
+  .alexa-orb { width: 94px; height: 94px; border-radius: 30px; }
+  .alexa-floating-chip { padding: 8px 9px; font-size: 9px; }
+  .chip-one { left: 0; }
+  .chip-two { right: 0; }
+  .chip-three { left: 10%; bottom: 13px; }
+  .alexa-principles { gap: 8px; }
+  .alexa-chat-header { padding: 14px; }
+  .alexa-demo-notice { margin: 12px 12px 0; }
+  .alexa-messages { padding: 16px 12px 10px; }
+  .alexa-prompt-area { padding-right: 12px; padding-left: 12px; }
+  .alexa-composer { margin-right: 10px; margin-left: 10px; }
+  .alexa-issue-bottom { align-items: flex-start; flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .alexa-issue-card { transition: none; }
+  .alexa-messages { scroll-behavior: auto; }
+}
