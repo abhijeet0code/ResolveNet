@@ -166,14 +166,34 @@ Add screenshots captured from your actual application to the `docs/assets/` fold
 ![ResolveNet authentication interface](docs/assets/authentication.png)
 -->
 
-Recommended screenshots:
+**ResolveNet Website screenshots:**
+    <br>
 
 - **Home page:** Introduce ResolveNet and its purpose.
-- **Problem reporting:** Show how a user can describe a challenge.
-- **Dashboard:** Display the available interface and project information.
-- **Authentication:** Show the login or registration experience.
+  <p>
+  <img alt="ResolveNet — Home page ." width="100%" src="https://github.com/user-attachments/assets/8e21ab8f-97d6-4d3d-8a14-b1fd0ac25444" />
+</p>
+<br>
 
-Use real screenshots of working features. Avoid showing private information, API keys, tokens, or personal user data.
+- **Problem reporting:** Here you can describe your complaint with an image attachment.
+<p>
+  <img alt="ResolveNet — Home page ." width="100%" src="https://github.com/user-attachments/assets/4365fa42-7ce8-4ea9-aca4-1b2b20394bb9" />
+  
+</p>
+<br>
+
+- **Dashboard:** This is the ResolveNet feed where you can see the complaint posts of other user.
+<p>
+  <img alt="ResolveNet — User complaint post ." width="100%" src="https://github.com/user-attachments/assets/08aad5b2-f873-4ad3-8e41-133afc9f7343" />
+
+</p>
+- **Authentication:** Show the login or registration experience.
+  <p>
+  <img alt="ResolveNet — Home page ." width="100%" src="https://github.com/user-attachments/assets/159fcdbb-08a2-4196-8031-76eb4bcd89f6" />
+
+</p>
+
+
 
 ## What Makes ResolveNet Different?
 
