@@ -11,3 +11,6 @@ __pycache__/
 *.pyc
 
 sih/
+backend_backup_before_merge/
+.DS_Store
+*.sqlite3
