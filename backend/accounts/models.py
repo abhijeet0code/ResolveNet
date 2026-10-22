@@ -1,7 +1,10 @@
+import logging
+
 from django.db import models
 from django.contrib.auth.models import User
 from pgvector.django import VectorField
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Profile(models.Model):
@@ -30,3 +33,24 @@ class Profile(models.Model):
 
     def __str__(self):
         return self.username or self.user.username
+
+@receiver(post_save, sender=Profile)
+def update_profile_embedding(sender, instance, created, update_fields, **kwargs):
+    # avatar upload ya embedding-only save pe dobara embedding mat banao
+    if update_fields is not None and not (
+        {"username", "full_name"} & set(update_fields)
+    ):
+        return
+
+    text = f"{instance.username or ''} {instance.full_name or ''}".strip()
+    if not text:
+        return
+
+    try:
+        from .utils import get_embedding
+
+        Profile.objects.filter(pk=instance.pk).update(
+            embedding=get_embedding(text)
+        )
+    except Exception:
+        logging.getLogger(__name__).exception("Embedding generation failed")
