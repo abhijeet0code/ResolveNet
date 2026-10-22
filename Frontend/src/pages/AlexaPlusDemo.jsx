@@ -104,7 +104,7 @@ function answerFor(prompt) {
     };
   }
 
-  if (/status|progress|track|pothole|water leak|pipeline|waste bin|rn-\\d+|tell me more|details/.test(query)) {
+  if (/status|progress|track|pothole|water leak|pipeline|waste bin|rn-\d+|tell me more|details/.test(query)) {
     let issue = DEMO_ISSUES.find((item) => {
       const words = [item.title, item.id, item.category].join(" ").toLowerCase();
       return words.split(/[^a-z0-9-]+/).some((word) => word.length > 3 && query.includes(word));
