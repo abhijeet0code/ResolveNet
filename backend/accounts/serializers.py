@@ -76,6 +76,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "phone": {"required": True, "allow_blank": False, "allow_null": False},
             "city": {"required": True, "allow_blank": False},
             "state": {"required": True, "allow_blank": False},
+            "occupation":{"required":True ,  "allow_blank":False},
         }
 
     def get_avatar_url(self, profile):
