@@ -14,3 +14,4 @@ sih/
 backend_backup_before_merge/
 .DS_Store
 *.sqlite3
+node_modules

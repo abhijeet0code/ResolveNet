@@ -56,6 +56,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             "state",
             "bio",
             "avatar_url",
+            "occupation",
             "created_at",
             "updated_at",
         ]
