@@ -19,6 +19,7 @@ import DashHome from "../../features/dashboard/ui/pages/DashHome";
 import Feed from "../../features/posts/ui/page/Feed";
 import CreatePost from "../../features/posts/ui/components/CreatePost";
 import SearchPage from "../../features/posts/ui/page/SearchPage";
+import ProfileSetup from "../../components/ProfileSetup/ProfileSetup";
 
 const AppRoute = () => {
   const dispatch = useDispatch();
@@ -95,6 +96,10 @@ const AppRoute = () => {
             path: "search",
             element: <SearchPage/>,
           },
+          {
+            path:"profilesetup",
+            element:<ProfileSetup/>
+          }
         ],
       },
     ],
