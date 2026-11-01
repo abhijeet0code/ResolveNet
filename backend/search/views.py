@@ -1,18 +1,25 @@
+import logging
 import math
 
-from django.contrib.auth.models import User
 from django.db.models import Q
+from pgvector.django import CosineDistance
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.models import Profile
+from accounts.utils import get_embedding
 from .models import Post
-from .serializers import AccountSerializer, PostSerializer
+from .serializers import PostSerializer, ProfileSearchSerializer
+
+logger = logging.getLogger(__name__)
 
 RESULT_LIMIT = 20
 DEFAULT_RADIUS_KM = 5
 MAX_RADIUS_KM = 50
+SIMILARITY_MAX_DISTANCE = 0.6   # chhota = strict, bada = zyada loose results
+MIN_SIMILAR_QUERY_LEN = 3
 
 
 def distance_km(lat1, lng1, lat2, lng2):
@@ -66,16 +73,44 @@ class SearchView(APIView):
         if not q:
             return Response({'type': 'accounts', 'count': 0, 'results': []})
 
-        users = User.objects.filter(
-            Q(username__icontains=q) | Q(first_name__icontains=q) | Q(last_name__icontains=q),
-            is_active=True,
-        ).order_by('username')[:RESULT_LIMIT]
-        users = list(users)
-        return Response({
-            'type': 'accounts',
-            'count': len(users),
-            'results': AccountSerializer(users, many=True).data,
-        })
+        # embedding list me load hi nahi karni (heavy hai)
+        base = Profile.objects.defer('embedding').filter(
+            username__isnull=False, user__is_active=True
+        )
+
+        # 1) pehle exact text match: username / full_name
+        text_matches = list(
+            base.filter(Q(username__icontains=q) | Q(full_name__icontains=q))
+            .order_by('username')[:RESULT_LIMIT]
+        )
+        results = []
+        for p in text_matches:
+            item = ProfileSearchSerializer(p).data
+            item['match'] = 'text'
+            results.append(item)
+
+        # 2) bachi hui jagah me embedding se similar profiles
+        remaining = RESULT_LIMIT - len(results)
+        if remaining > 0 and len(q) >= MIN_SIMILAR_QUERY_LEN:
+            try:
+                query_vector = get_embedding(q)
+                similar = (
+                    base.exclude(pk__in=[p.pk for p in text_matches])
+                    .filter(embedding__isnull=False)
+                    .annotate(distance=CosineDistance('embedding', query_vector))
+                    .filter(distance__lt=SIMILARITY_MAX_DISTANCE)
+                    .order_by('distance')[:remaining]
+                )
+                for p in similar:
+                    item = ProfileSearchSerializer(p).data
+                    item['match'] = 'similar'
+                    item['distance'] = round(p.distance, 3)
+                    results.append(item)
+            except Exception:
+                # embedding fail ho to bhi text results mil jayenge
+                logger.exception("Similar account search failed")
+
+        return Response({'type': 'accounts', 'count': len(results), 'results': results})
 
     def search_near(self, request, q):
         try:
@@ -87,7 +122,6 @@ class SearchView(APIView):
 
         radius = min(max(radius, 0.1), MAX_RADIUS_KM)
 
-        # pehle chhota box (DB mein), phir exact doori Python mein
         delta_lat = radius / 111.0
         delta_lng = radius / (111.0 * max(math.cos(math.radians(lat)), 0.01))
         posts = Post.objects.select_related('created_by').filter(
