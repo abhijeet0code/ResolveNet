@@ -54,6 +54,14 @@ const steps = [
     required: true,
   },
   {
+    key: "occupation",
+    kind: "choice",
+    field:"occupation",
+    title:"Who are you ?",
+    subtitle:"Tell us more about yourself.",
+    required: false,
+  },
+  {
     key: "bio",
     kind: "textarea",
     field: "bio",
@@ -62,6 +70,7 @@ const steps = [
     placeholder: "A short line about yourself",
     required: false,
   },
+  
   {
     key: "avatar",
     kind: "avatar",
@@ -96,7 +105,7 @@ const ProfileSetupWizard = ({ isEdit = false }) => {
       phone: "",
       city: "",
       state: "",
-      bio: "",
+      // bio: "",
     },
   });
 
@@ -116,6 +125,8 @@ const ProfileSetupWizard = ({ isEdit = false }) => {
           city: p.city || "",
           state: p.state || "",
           bio: p.bio || "",
+          // occupation: p.bio || "",
+
         });
 
         if (p.avatar_url) {
