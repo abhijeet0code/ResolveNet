@@ -122,7 +122,7 @@ const Profile = () => {
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigate("/dashboard/profile-setup")}
+                onClick={() => navigate("/dashboard/profilesetup")}
                 className="bg-primary hover:bg-primary-light text-white text-sm font-medium rounded-md px-4 py-2 transition-colors"
               >
                 Edit Profile

@@ -15,7 +15,7 @@ import ProtectedLayout from "../protected/ProtectedLayout";
 import DashboardLayout from "../layout/DashboardLayout";
 import Profile from "../../features/dashboard/ui/components/Profile";
 import ProfileSetupWizard from "../../components/ProfileSetup/ProfileSetupWizard ";
-import DashHome from "../../features/dashboard/ui/pages/DashHome";
+// import DashHome from "../../features/dashboard/ui/pages/DashHome";
 import Feed from "../../features/posts/ui/page/Feed";
 import CreatePost from "../../features/posts/ui/components/CreatePost";
 import SearchPage from "../../features/posts/ui/page/SearchPage";
@@ -101,6 +101,10 @@ const AppRoute = () => {
             path: "search",
             element: <SearchPage/>,
           },
+          {
+            path:"profilesetup",
+            element:<ProfileSetup/>
+          }
         ],
       },
     ],
