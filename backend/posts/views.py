@@ -1,8 +1,10 @@
 import uuid
+from datetime import timedelta
 
 from django.db import transaction
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count, Exists, F, OuterRef, Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from rest_framework import generics, permissions, status
 from rest_framework.authentication import TokenAuthentication
@@ -289,4 +291,56 @@ class SuggestionUpvoteToggleView(APIView):
         return Response(
             {"upvoted": upvoted, "upvotes_count": suggestion.upvotes.count()},
             status=status.HTTP_200_OK,
+        )
+
+
+# ---------------------------------------------------------------------------
+# Trending + single post
+# ---------------------------------------------------------------------------
+
+TRENDING_DAYS = 7
+TRENDING_LIMIT = 12
+
+
+class PostTrendingView(generics.ListAPIView):
+    """Pichhle 7 din mein sabse zyada likes + suggestions wale posts (Search page ke liye)."""
+
+    serializer_class = PostSerializer
+    pagination_class = None
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        since = timezone.now() - timedelta(days=TRENDING_DAYS)
+        return (
+            Post.objects.filter(status=Post.Status.PUBLISHED)
+            .select_related("author__profile")
+            .prefetch_related("media")
+            .annotate(
+                recent_likes=Count(
+                    "likes", filter=Q(likes__created_at__gte=since), distinct=True
+                ),
+                recent_suggestions=Count(
+                    "suggestions", filter=Q(suggestions__created_at__gte=since), distinct=True
+                ),
+            )
+            .annotate(score=F("recent_likes") + F("recent_suggestions"))
+            .order_by("-score", "-created_at")[:TRENDING_LIMIT]
+        )
+
+
+class PostDetailView(generics.RetrieveAPIView):
+    """Ek single post — search result ya share link kholne ke liye."""
+
+    serializer_class = PostSerializer
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "id"
+    lookup_url_kwarg = "post_id"
+
+    def get_queryset(self):
+        return (
+            Post.objects.exclude(status=Post.Status.REMOVED)
+            .select_related("author__profile")
+            .prefetch_related("media")
         )

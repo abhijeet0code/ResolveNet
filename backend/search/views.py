@@ -8,10 +8,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.authentication import SupabaseAuthentication
 from accounts.models import Profile
 from accounts.utils import get_embedding
-from .models import Post
-from .serializers import PostSerializer, ProfileSearchSerializer
+from posts.models import Post
+from posts.serializers import PostSerializer
+from .serializers import ProfileSearchSerializer
 
 logger = logging.getLogger(__name__)
 
@@ -32,11 +34,23 @@ def distance_km(lat1, lng1, lat2, lng2):
     return 2 * r * math.asin(math.sqrt(a))
 
 
+def published_posts():
+    """Feed wale real posts (jo log feed me dekhte hain)."""
+    return (
+        Post.objects.filter(status=Post.Status.PUBLISHED)
+        .select_related('author__profile')
+        .prefetch_related('media')
+    )
+
+
 def filter_posts_by_text(queryset, q):
     if not q:
         return queryset
     return queryset.filter(
-        Q(title__icontains=q) | Q(description__icontains=q) | Q(category__icontains=q)
+        Q(caption__icontains=q)
+        | Q(city__icontains=q)
+        | Q(state__icontains=q)
+        | Q(location_name__icontains=q)
     )
 
 
@@ -47,7 +61,7 @@ class SearchView(APIView):
     GET /api/search/?q=garbage&type=near&lat=23.34&lng=85.30&radius=5
     Header: Authorization: Token <token>
     """
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, SupabaseAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -58,15 +72,15 @@ class SearchView(APIView):
             return self.search_accounts(q)
         if tab == 'near':
             return self.search_near(request, q)
-        return self.search_posts(q)
+        return self.search_posts(request, q)
 
-    def search_posts(self, q):
-        posts = filter_posts_by_text(Post.objects.select_related('created_by'), q)
+    def search_posts(self, request, q):
+        posts = filter_posts_by_text(published_posts(), q)
         posts = list(posts.order_by('-created_at')[:RESULT_LIMIT])
         return Response({
             'type': 'posts',
             'count': len(posts),
-            'results': PostSerializer(posts, many=True).data,
+            'results': PostSerializer(posts, many=True, context={'request': request}).data,
         })
 
     def search_accounts(self, q):
@@ -122,9 +136,10 @@ class SearchView(APIView):
 
         radius = min(max(radius, 0.1), MAX_RADIUS_KM)
 
+        # pehle ek chhota box (database me), phir sahi doori python me
         delta_lat = radius / 111.0
         delta_lng = radius / (111.0 * max(math.cos(math.radians(lat)), 0.01))
-        posts = Post.objects.select_related('created_by').filter(
+        posts = published_posts().filter(
             latitude__range=(lat - delta_lat, lat + delta_lat),
             longitude__range=(lng - delta_lng, lng + delta_lng),
         )
@@ -132,14 +147,15 @@ class SearchView(APIView):
 
         nearby = []
         for post in posts:
-            d = distance_km(lat, lng, post.latitude, post.longitude)
+            # Post me latitude/longitude Decimal hain, haversine ke liye float chahiye
+            d = distance_km(lat, lng, float(post.latitude), float(post.longitude))
             if d <= radius:
                 nearby.append((d, post))
         nearby.sort(key=lambda item: item[0])
 
         results = []
         for d, post in nearby[:RESULT_LIMIT]:
-            item = PostSerializer(post).data
+            item = PostSerializer(post, context={'request': request}).data
             item['distance_km'] = round(d, 2)
             results.append(item)
 
