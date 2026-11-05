@@ -19,6 +19,7 @@ import DashHome from "../../features/dashboard/ui/pages/DashHome";
 import Feed from "../../features/posts/ui/page/Feed";
 import CreatePost from "../../features/posts/ui/components/CreatePost";
 import SearchPage from "../../features/posts/ui/page/SearchPage";
+import PostDetail from "../../features/posts/ui/page/PostDetail";
 import ProfileSetup from "../../components/ProfileSetup/ProfileSetup";
 
 const AppRoute = () => {
@@ -95,6 +96,10 @@ const AppRoute = () => {
           {
             path: "search",
             element: <SearchPage/>,
+          },
+          {
+            path: "posts/:postId",
+            element: <PostDetail />,
           },
           {
             path:"profilesetup",
