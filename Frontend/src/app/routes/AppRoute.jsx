@@ -101,10 +101,6 @@ const AppRoute = () => {
             path: "search",
             element: <SearchPage/>,
           },
-          {
-            path:"profilesetup",
-            element:<ProfileSetup/>
-          }
         ],
       },
     ],
