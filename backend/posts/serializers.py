@@ -15,6 +15,12 @@ class PostMediaSerializer(serializers.ModelSerializer):
         return get_public_image_url(bucket=media.storage_bucket, path=media.storage_path)
 
 
+def is_official(user):
+    """Profile.role == "official" ho to True. Profile na ho to bhi crash nahi karta."""
+    profile = getattr(user, "profile", None)
+    return bool(profile and profile.role == "official")
+
+
 def _author_payload(user):
     profile = getattr(user, "profile", None)
 
@@ -84,14 +90,38 @@ class SuggestionSerializer(serializers.ModelSerializer):
             "is_upvoted",
             "is_mine",
             "replies_count",
+            "approx_budget",
+            "approx_start",
+            "approx_end",
             "created_at",
         ]
-        read_only_fields = ["id", "author", "parent", "created_at"]
+        read_only_fields = [
+            "id",
+            "author",
+            "parent",
+            "approx_budget",
+            "approx_start",
+            "approx_end",
+            "created_at",
+        ]
         # purana modal aur replies sirf "text" bhejte hain, naya form title + description
         extra_kwargs = {"text": {"required": False}}
 
     def get_author(self, suggestion):
         return _author_payload(suggestion.author)
+
+    # budget / time sirf official ko dikhte hain, baaki users ke response se hat jaate hain
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        if not hasattr(self, "_viewer_is_official"):  # ek request me ek hi baar check
+            request = self.context.get("request")
+            self._viewer_is_official = bool(request and is_official(request.user))
+
+        if not self._viewer_is_official:
+            for key in ("approx_budget", "approx_start", "approx_end"):
+                data.pop(key, None)
+        return data
 
     # View annotate karta hai (fast). Annotate nahi hua (jaise create response) to fallback query.
     def get_upvotes_count(self, suggestion):
@@ -127,6 +157,24 @@ class SuggestionSerializer(serializers.ModelSerializer):
     def get_replies_count(self, suggestion):
         annotated = getattr(suggestion, "replies_total", None)
         return annotated if annotated is not None else suggestion.replies.count()
+
+
+class SuggestionManageSerializer(serializers.ModelSerializer):
+    """Official ke liye: budget aur time badalna."""
+
+    class Meta:
+        model = Suggestion
+        fields = ["approx_budget", "approx_start", "approx_end"]
+        extra_kwargs = {"approx_budget": {"min_value": 0}}
+
+    def validate(self, data):
+        start = data.get("approx_start", self.instance.approx_start if self.instance else None)
+        end = data.get("approx_end", self.instance.approx_end if self.instance else None)
+        if start and end and end < start:
+            raise serializers.ValidationError(
+                {"approx_end": "End date can't be before start date."}
+            )
+        return data
 
 
 class PostSerializer(serializers.ModelSerializer):

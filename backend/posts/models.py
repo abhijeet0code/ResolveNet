@@ -159,6 +159,11 @@ class Suggestion(models.Model):
     )
     role_tag = models.CharField(max_length=20, choices=RoleTag.choices, blank=True)
 
+    # --- "Admin Only" panel (sirf official/government badal sakte hain) ---
+    approx_budget = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    approx_start = models.DateField(null=True, blank=True)
+    approx_end = models.DateField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

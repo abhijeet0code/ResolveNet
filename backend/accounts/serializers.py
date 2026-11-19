@@ -55,13 +55,16 @@ class ProfileSerializer(serializers.ModelSerializer):
             "city",
             "state",
             "bio",
+            "role",
             "avatar_url",
             "created_at",
             "updated_at",
         ]
 
+        # role sirf read-only: user API se apna role nahi badal sakta
         read_only_fields = [
             "id",
+            "role",
             "avatar_url",
             "created_at",
             "updated_at",

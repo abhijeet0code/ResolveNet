@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useSelector } from "react-redux";
 import {
   X,
   Lightbulb,
@@ -15,6 +16,7 @@ import axiosInstance from "../../../../config/axiosInstance.jsx"; // adjust to y
 import logo from "../../../../assets/ResolveNet-favicon-white-detail.png"; // adjust to your actual path
 import SuggestionCard from "./SuggestionCard";
 import NewSuggestionForm from "./NewSuggestionForm";
+import AdminPanel from "./AdminPanel";
 
 // Upar ke tabs. value backend ki Suggestion.Category se same honi chahiye
 const MAIN_TABS = [
@@ -65,6 +67,12 @@ const SolutionRoomModal = ({ post, onClose, onCountChange }) => {
   const listRef = useRef(null);
 
   const author = post.author;
+
+  // role backend se aata hai (Profile.role). Sirf "official" ko Admin panel dikhta hai
+  const isOfficial = useSelector((state) => state.auth?.user?.profile?.role) === "official";
+  const [selectedId, setSelectedId] = useState(null); // Admin panel isi suggestion ka dikhata hai
+  const selectedSuggestion = suggestions.find((s) => s.id === selectedId) || null;
+
   const isMoreActive = MORE_TABS.some((t) => t.value === category);
   const currentLabel = ALL_TABS.find((t) => t.value === category)?.label;
 
@@ -113,6 +121,14 @@ const SolutionRoomModal = ({ post, onClose, onCountChange }) => {
       active = false;
     };
   }, [post.id, category]);
+
+  // official ke liye: selection list me na ho to pehli suggestion select karo
+  useEffect(() => {
+    if (!isOfficial) return;
+    if (!suggestions.some((s) => s.id === selectedId)) {
+      setSelectedId(suggestions[0]?.id ?? null);
+    }
+  }, [suggestions, isOfficial, selectedId]);
 
   // reply par click hote hi input par focus
   useEffect(() => {
@@ -190,6 +206,11 @@ const SolutionRoomModal = ({ post, onClose, onCountChange }) => {
 
   const toggleUpvote = (item) => vote(item, 1);
   const toggleDownvote = (item) => vote(item, -1);
+
+  // Admin panel se save hone par suggestion ki values list me bhi badal do
+  const handleAdminSaved = (id, fields) => {
+    patchItem(id, (s) => ({ ...s, ...fields }));
+  };
 
   const showNotice = (message) => {
     setNotice(message);
@@ -383,85 +404,95 @@ const SolutionRoomModal = ({ post, onClose, onCountChange }) => {
           )}
         </div>
 
-        {/* Scrollable body */}
-        <div ref={listRef} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 flex flex-col gap-4">
-          {/* Kis problem par suggestions de rahe hain */}
-          <div className="flex gap-3 bg-card border border-border rounded-xl p-3">
-            <div className="w-14 h-14 rounded-lg overflow-hidden bg-surface shrink-0">
-              {post.media?.[0]?.image_url && (
-                <img
-                  src={post.media[0].image_url}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              )}
+        {/* Body: suggestions list + (sirf official ke liye) Admin panel */}
+        <div className="flex-1 min-h-0 flex flex-col md:flex-row">
+          <div ref={listRef} className="flex-1 min-w-0 overflow-y-auto px-4 sm:px-6 py-4 flex flex-col gap-4">
+            {/* Kis problem par suggestions de rahe hain */}
+            <div className="flex gap-3 bg-card border border-border rounded-xl p-3">
+              <div className="w-14 h-14 rounded-lg overflow-hidden bg-surface shrink-0">
+                {post.media?.[0]?.image_url && (
+                  <img
+                    src={post.media[0].image_url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-text-muted truncate">
+                  Issue reported by{" "}
+                  <span className="font-medium text-text-primary">@{author?.username}</span>
+                  {post.city && ` · ${post.city}`}
+                </p>
+                <p className="text-sm text-text-primary mt-0.5 line-clamp-2 break-words">
+                  {post.caption}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-xs text-text-muted truncate">
-                Issue reported by{" "}
-                <span className="font-medium text-text-primary">@{author?.username}</span>
-                {post.city && ` · ${post.city}`}
-              </p>
-              <p className="text-sm text-text-primary mt-0.5 line-clamp-2 break-words">
-                {post.caption}
-              </p>
-            </div>
+
+            {/* naya suggestion: button ya form */}
+            {showForm ? (
+              <NewSuggestionForm
+                defaultCategory={category}
+                onSubmit={handleCreateSuggestion}
+                onCancel={() => setShowForm(false)}
+              />
+            ) : (
+              <button
+                onClick={() => setShowForm(true)}
+                className="flex items-center justify-center gap-2 w-full border border-dashed border-border rounded-xl py-2.5 text-sm text-text-secondary hover:border-accent hover:text-accent transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Add suggestion
+              </button>
+            )}
+
+            {loading ? (
+              <p className="text-xs text-text-muted">Loading suggestions...</p>
+            ) : error ? (
+              <p className="text-sm text-error text-center py-6">{error}</p>
+            ) : suggestions.length === 0 ? (
+              <div className="flex flex-col items-center gap-2 py-10 text-text-muted">
+                <Lightbulb className="w-8 h-8" strokeWidth={1.5} />
+                <p className="text-sm text-center">
+                  No suggestions from {currentLabel} yet. Be the first to suggest a fix.
+                </p>
+              </div>
+            ) : (
+              <>
+                {suggestions.map((s) => (
+                  <SuggestionCard
+                    key={s.id}
+                    item={s}
+                    repliesState={repliesById[s.id]}
+                    onUpvote={toggleUpvote}
+                    onDownvote={toggleDownvote}
+                    onDelete={handleDelete}
+                    onReport={handleReport}
+                    selected={isOfficial && s.id === selectedId}
+                    onSelect={isOfficial ? (item) => setSelectedId(item.id) : undefined}
+                    onReply={startReply}
+                    onToggleReplies={toggleReplies}
+                  />
+                ))}
+
+                {nextUrl && (
+                  <button
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    className="text-sm font-medium text-primary hover:text-primary-light py-2 disabled:opacity-60"
+                  >
+                    {loadingMore ? "Loading..." : "Load more"}
+                  </button>
+                )}
+              </>
+            )}
           </div>
 
-          {/* naya suggestion: button ya form */}
-          {showForm ? (
-            <NewSuggestionForm
-              defaultCategory={category}
-              onSubmit={handleCreateSuggestion}
-              onCancel={() => setShowForm(false)}
-            />
-          ) : (
-            <button
-              onClick={() => setShowForm(true)}
-              className="flex items-center justify-center gap-2 w-full border border-dashed border-border rounded-xl py-2.5 text-sm text-text-secondary hover:border-accent hover:text-accent transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add suggestion
-            </button>
-          )}
-
-          {loading ? (
-            <p className="text-xs text-text-muted">Loading suggestions...</p>
-          ) : error ? (
-            <p className="text-sm text-error text-center py-6">{error}</p>
-          ) : suggestions.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 py-10 text-text-muted">
-              <Lightbulb className="w-8 h-8" strokeWidth={1.5} />
-              <p className="text-sm text-center">
-                No suggestions from {currentLabel} yet. Be the first to suggest a fix.
-              </p>
+          {isOfficial && (
+            <div className="shrink-0 md:w-80 border-t md:border-t-0 md:border-l border-border overflow-y-auto p-4 max-h-[40vh] md:max-h-none">
+              <AdminPanel suggestion={selectedSuggestion} onSaved={handleAdminSaved} />
             </div>
-          ) : (
-            <>
-              {suggestions.map((s) => (
-                <SuggestionCard
-                  key={s.id}
-                  item={s}
-                  repliesState={repliesById[s.id]}
-                  onUpvote={toggleUpvote}
-                  onDownvote={toggleDownvote}
-                  onDelete={handleDelete}
-                  onReport={handleReport}
-                  onReply={startReply}
-                  onToggleReplies={toggleReplies}
-                />
-              ))}
-
-              {nextUrl && (
-                <button
-                  onClick={loadMore}
-                  disabled={loadingMore}
-                  className="text-sm font-medium text-primary hover:text-primary-light py-2 disabled:opacity-60"
-                >
-                  {loadingMore ? "Loading..." : "Load more"}
-                </button>
-              )}
-            </>
           )}
         </div>
 

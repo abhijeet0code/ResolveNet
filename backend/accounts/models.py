@@ -25,6 +25,14 @@ class Profile(models.Model):
     default="",
     )
 
+    # official = Suggested Solution Room ka "Admin Only" panel dekh aur badal sakta hai.
+    # Ye sirf Django admin se badla jata hai (API se nahi, taaki koi khud official na ban sake)
+    class Role(models.TextChoices):
+        CITIZEN = "citizen", "Citizen"
+        OFFICIAL = "official", "Government / Official"
+
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.CITIZEN)
+
     embedding = VectorField(dimensions=384, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

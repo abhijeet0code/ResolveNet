@@ -27,7 +27,13 @@ from .models import (
     SuggestionReport,
     SuggestionUpvote,
 )
-from .serializers import PostSerializer, CommentSerializer, SuggestionSerializer
+from .serializers import (
+    CommentSerializer,
+    PostSerializer,
+    SuggestionManageSerializer,
+    SuggestionSerializer,
+    is_official,
+)
 
 
 AUTH_CLASSES = [TokenAuthentication, SupabaseAuthentication]
@@ -400,6 +406,23 @@ class SuggestionReportView(APIView):
             suggestion=suggestion, reporter=request.user
         )
         return Response({"reported": True}, status=status.HTTP_200_OK)
+
+
+class SuggestionManageView(APIView):
+    """PATCH /api/posts/suggestions/<id>/manage/ — sirf official: approx budget / time badalna."""
+
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, suggestion_id):
+        if not is_official(request.user):
+            raise PermissionDenied("Only officials can manage this section.")
+
+        suggestion = get_object_or_404(Suggestion, id=suggestion_id)
+        serializer = SuggestionManageSerializer(suggestion, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # ---------------------------------------------------------------------------

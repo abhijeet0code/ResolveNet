@@ -54,6 +54,8 @@ const SuggestionCard = ({
   onReport,
   onReply,
   onToggleReplies,
+  selected = false, // official ke liye: ye card select hai (Admin panel isi ka dikhta hai)
+  onSelect, // sirf official ko milta hai
 }) => {
   const [menuOpen, setMenuOpen] = useState(false); // teen-dot menu
   const author = item.author;
@@ -63,7 +65,12 @@ const SuggestionCard = ({
   const description = item.description || item.text;
 
   return (
-    <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
+    <div
+      onClick={() => onSelect?.(item)}
+      className={`bg-card border rounded-xl p-4 flex flex-col gap-3 transition-shadow ${
+        selected ? "border-primary ring-2 ring-primary/30" : "border-border"
+      } ${onSelect ? "cursor-pointer" : ""}`}
+    >
       {/* Author */}
       <div className="flex items-center gap-3">
         <Avatar author={author} />
