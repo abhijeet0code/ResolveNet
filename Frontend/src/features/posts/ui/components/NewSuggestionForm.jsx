@@ -27,8 +27,9 @@ const getErrorMessage = (err) => {
   return Array.isArray(value) ? value[0] : String(value);
 };
 
-const NewSuggestionForm = ({ onSubmit, onCancel }) => {
-  const [category, setCategory] = useState("citizen");
+// defaultCategory: modal mein jo tab khula hai wahi pehle se chuna hua dikhe
+const NewSuggestionForm = ({ onSubmit, onCancel, defaultCategory = "citizen" }) => {
+  const [category, setCategory] = useState(defaultCategory);
   const [roleTag, setRoleTag] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
