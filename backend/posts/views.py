@@ -227,7 +227,11 @@ def annotate_suggestions(queryset, user):
 
 
 class SuggestionListCreateView(generics.ListCreateAPIView):
-    """GET: post ke top-level suggestions (sabse zyada upvote pehle). POST: nayi suggestion."""
+    """
+    GET: post ke top-level suggestions (sabse zyada upvote pehle).
+         ?category=citizen se ek tab ki suggestions.
+    POST: nayi suggestion — title, description, needs, category, role_tag.
+    """
 
     serializer_class = SuggestionSerializer
     pagination_class = PostPagination
@@ -238,16 +242,31 @@ class SuggestionListCreateView(generics.ListCreateAPIView):
         qs = Suggestion.objects.filter(
             post_id=self.kwargs["post_id"], parent__isnull=True
         )
+
+        category = self.request.query_params.get("category")
+        if category:
+            qs = qs.filter(category=category)
+
         return annotate_suggestions(qs, self.request.user).order_by(
             "-upvotes_total", "created_at"
         )
 
     def perform_create(self, serializer):
         post = get_object_or_404(Post, id=self.kwargs["post_id"])
-        text = self.request.data.get("text", "").strip()
-        if not text:
-            raise ValidationError({"text": "Suggestion can't be empty."})
-        serializer.save(post=post, author=self.request.user, text=text)
+
+        # naya form "description" bhejta hai, purana modal sirf "text"
+        description = (
+            self.request.data.get("description") or self.request.data.get("text") or ""
+        ).strip()
+        if not description:
+            raise ValidationError({"description": "Description can't be empty."})
+
+        serializer.save(
+            post=post,
+            author=self.request.user,
+            description=description,
+            text=description[:1000],
+        )
 
 
 class SuggestionReplyListCreateView(generics.ListCreateAPIView):

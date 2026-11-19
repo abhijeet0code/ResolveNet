@@ -24,6 +24,8 @@ def _author_payload(user):
             "username": user.username,
             "full_name": "",
             "avatar_url": None,
+            "city": "",
+            "state": "",
         }
 
     return {
@@ -31,6 +33,8 @@ def _author_payload(user):
         "username": profile.username or user.username,
         "full_name": profile.full_name,
         "avatar_url": get_public_image_url(bucket="avatars", path=profile.avatar_path),
+        "city": profile.city,
+        "state": profile.state,
     }
 
 
@@ -52,12 +56,24 @@ class SuggestionSerializer(serializers.ModelSerializer):
     is_upvoted = serializers.SerializerMethodField()
     replies_count = serializers.SerializerMethodField()
 
+    # "Needs" — chhoti chhoti lines ki list (max 10)
+    needs = serializers.ListField(
+        child=serializers.CharField(max_length=200),
+        required=False,
+        max_length=10,
+    )
+
     class Meta:
         model = Suggestion
         fields = [
             "id",
             "author",
             "text",
+            "title",
+            "description",
+            "needs",
+            "category",
+            "role_tag",
             "parent",
             "upvotes_count",
             "is_upvoted",
@@ -65,6 +81,8 @@ class SuggestionSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["id", "author", "parent", "created_at"]
+        # purana modal aur replies sirf "text" bhejte hain, naya form title + description
+        extra_kwargs = {"text": {"required": False}}
 
     def get_author(self, suggestion):
         return _author_payload(suggestion.author)
