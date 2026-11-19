@@ -177,8 +177,29 @@ class SuggestionUpvote(models.Model):
         on_delete=models.CASCADE,
         related_name="suggestion_upvotes",
     )
+    # 1 = upvote, -1 = downvote (purani rows apne aap 1 = upvote rahengi)
+    value = models.SmallIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # ek user ek suggestion ko ek hi baar upvote kar sakta hai
+        # ek user ek suggestion par ek hi vote (up ya down) de sakta hai
         unique_together = ("suggestion", "user")
+
+
+class SuggestionReport(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    suggestion = models.ForeignKey(
+        Suggestion, on_delete=models.CASCADE, related_name="reports"
+    )
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="suggestion_reports",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # ek user ek suggestion ko ek hi baar report kar sakta hai
+        unique_together = ("suggestion", "reporter")
+        ordering = ["-created_at"]

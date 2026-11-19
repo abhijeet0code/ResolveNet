@@ -1,5 +1,12 @@
-import React from "react";
-import { ArrowBigUp, MessageCircle } from "lucide-react";
+import React, { useState } from "react";
+import {
+  ArrowBigUp,
+  ArrowBigDown,
+  EllipsisVertical,
+  Flag,
+  MessageCircle,
+  Trash2,
+} from "lucide-react";
 import SuggestionItem, { Avatar } from "./SuggestionItem";
 
 const CATEGORY_LABELS = {
@@ -38,7 +45,17 @@ const timeAgo = (dateString) => {
  * item         -> API se aayi suggestion
  * repliesState -> { items, loading, open, loaded }
  */
-const SuggestionCard = ({ item, repliesState, onUpvote, onReply, onToggleReplies }) => {
+const SuggestionCard = ({
+  item,
+  repliesState,
+  onUpvote,
+  onDownvote,
+  onDelete,
+  onReport,
+  onReply,
+  onToggleReplies,
+}) => {
+  const [menuOpen, setMenuOpen] = useState(false); // teen-dot menu
   const author = item.author;
   const place = [author?.city, author?.state].filter(Boolean).join(", ");
 
@@ -110,19 +127,79 @@ const SuggestionCard = ({ item, repliesState, onUpvote, onReply, onToggleReplies
           Reply
         </button>
 
-        <button
-          onClick={() => onUpvote(item)}
-          aria-label={item.is_upvoted ? "Remove upvote" : "Upvote"}
-          className="flex items-center gap-1"
-        >
-          <ArrowBigUp
-            className={`w-5 h-5 transition-transform duration-200 hover:scale-110 ${
-              item.is_upvoted ? "fill-primary text-primary" : "text-text-secondary"
-            }`}
-            strokeWidth={1.8}
-          />
-          <span className="text-xs text-text-secondary">{item.upvotes_count}</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {/* Upvote */}
+          <button
+            onClick={() => onUpvote(item)}
+            aria-label={item.my_vote === 1 ? "Remove upvote" : "Upvote"}
+            className="flex items-center gap-1"
+          >
+            <ArrowBigUp
+              className={`w-5 h-5 transition-transform duration-200 hover:scale-110 ${
+                item.my_vote === 1 ? "fill-primary text-primary" : "text-text-secondary"
+              }`}
+              strokeWidth={1.8}
+            />
+            <span className="text-xs text-text-secondary">{item.upvotes_count}</span>
+          </button>
+
+          {/* Downvote */}
+          <button
+            onClick={() => onDownvote(item)}
+            aria-label={item.my_vote === -1 ? "Remove downvote" : "Downvote"}
+          >
+            <ArrowBigDown
+              className={`w-5 h-5 transition-transform duration-200 hover:scale-110 ${
+                item.my_vote === -1 ? "fill-error text-error" : "text-text-secondary"
+              }`}
+              strokeWidth={1.8}
+            />
+          </button>
+
+          {/* Teen-dot menu: apni suggestion = Delete, doosre ki = Report */}
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((prev) => !prev)}
+              aria-label="More options"
+              className="p-1 text-text-muted hover:text-text-primary transition-colors"
+            >
+              <EllipsisVertical className="w-4 h-4" strokeWidth={1.8} />
+            </button>
+
+            {menuOpen && (
+              <>
+                {/* bahar click karne par menu band */}
+                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+
+                <div className="absolute right-0 bottom-full mb-1 z-20 w-36 bg-surface border border-border rounded-lg shadow-lg py-1">
+                  {item.is_mine ? (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onDelete(item);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-error hover:bg-card transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" strokeWidth={1.8} />
+                      Delete
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setMenuOpen(false);
+                        onReport(item);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-primary hover:bg-card transition-colors"
+                    >
+                      <Flag className="w-4 h-4" strokeWidth={1.8} />
+                      Report
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Replies */}

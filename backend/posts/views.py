@@ -2,10 +2,10 @@ import uuid
 from datetime import timedelta
 
 from django.db import transaction
-from django.db.models import Count, Exists, F, OuterRef, Q
+from django.db.models import Count, F, OuterRef, Q, Subquery
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework import generics, permissions, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
@@ -24,6 +24,7 @@ from .models import (
     SavedPost,
     Comment,
     Suggestion,
+    SuggestionReport,
     SuggestionUpvote,
 )
 from .serializers import PostSerializer, CommentSerializer, SuggestionSerializer
@@ -216,12 +217,15 @@ class CommentListCreateView(generics.ListCreateAPIView):
 # ---------------------------------------------------------------------------
 
 def annotate_suggestions(queryset, user):
-    """Counts + 'maine upvote kiya?' ek hi query mein (N+1 se bachne ke liye)."""
+    """Counts + 'meri vote kya hai?' ek hi query mein (N+1 se bachne ke liye)."""
     return queryset.select_related("author__profile").annotate(
-        upvotes_total=Count("upvotes", distinct=True),
+        upvotes_total=Count("upvotes", filter=Q(upvotes__value=1), distinct=True),
+        downvotes_total=Count("upvotes", filter=Q(upvotes__value=-1), distinct=True),
         replies_total=Count("replies", distinct=True),
-        upvoted_by_me=Exists(
-            SuggestionUpvote.objects.filter(suggestion=OuterRef("pk"), user=user)
+        my_vote_value=Subquery(
+            SuggestionUpvote.objects.filter(
+                suggestion=OuterRef("pk"), user=user
+            ).values("value")[:1]
         ),
     )
 
@@ -247,8 +251,10 @@ class SuggestionListCreateView(generics.ListCreateAPIView):
         if category:
             qs = qs.filter(category=category)
 
-        return annotate_suggestions(qs, self.request.user).order_by(
-            "-upvotes_total", "created_at"
+        qs = annotate_suggestions(qs, self.request.user)
+        # sabse zyada (up - down) wali suggestion upar
+        return qs.annotate(score=F("upvotes_total") - F("downvotes_total")).order_by(
+            "-score", "created_at"
         )
 
     def perform_create(self, serializer):
@@ -290,27 +296,110 @@ class SuggestionReplyListCreateView(generics.ListCreateAPIView):
         serializer.save(post=root.post, parent=root, author=self.request.user, text=text)
 
 
-class SuggestionUpvoteToggleView(APIView):
+def apply_vote(suggestion, user, value):
+    """
+    value: 1 (upvote) ya -1 (downvote).
+    Wahi button dobara dabaya to vote hat jata hai, doosra dabaya to vote badal jata hai.
+    Return: meri nayi vote (1, -1 ya 0).
+    """
+    vote = SuggestionUpvote.objects.filter(suggestion=suggestion, user=user).first()
+
+    if vote and vote.value == value:
+        vote.delete()
+        return 0
+
+    if vote:
+        vote.value = value
+        vote.save(update_fields=["value"])
+        return value
+
+    SuggestionUpvote.objects.create(suggestion=suggestion, user=user, value=value)
+    return value
+
+
+def vote_counts(suggestion):
+    votes = suggestion.upvotes
+    return votes.filter(value=1).count(), votes.filter(value=-1).count()
+
+
+class SuggestionVoteView(APIView):
+    """POST /api/posts/suggestions/<id>/vote/   body: {"value": 1} ya {"value": -1}"""
+
     authentication_classes = AUTH_CLASSES
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, suggestion_id):
         suggestion = get_object_or_404(Suggestion, id=suggestion_id)
-        upvote = SuggestionUpvote.objects.filter(
-            suggestion=suggestion, user=request.user
-        ).first()
 
-        if upvote:
-            upvote.delete()
-            upvoted = False
-        else:
-            SuggestionUpvote.objects.create(suggestion=suggestion, user=request.user)
-            upvoted = True
+        try:
+            value = int(request.data.get("value"))
+        except (TypeError, ValueError):
+            value = None
+        if value not in (1, -1):
+            raise ValidationError({"value": "value 1 (up) ya -1 (down) honi chahiye."})
+
+        my_vote = apply_vote(suggestion, request.user, value)
+        upvotes, downvotes = vote_counts(suggestion)
 
         return Response(
-            {"upvoted": upvoted, "upvotes_count": suggestion.upvotes.count()},
+            {"my_vote": my_vote, "upvotes_count": upvotes, "downvotes_count": downvotes},
             status=status.HTTP_200_OK,
         )
+
+
+class SuggestionUpvoteToggleView(APIView):
+    """Purana endpoint — ab bhi chalta hai (sirf upvote toggle)."""
+
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, suggestion_id):
+        suggestion = get_object_or_404(Suggestion, id=suggestion_id)
+
+        my_vote = apply_vote(suggestion, request.user, 1)
+        upvotes, downvotes = vote_counts(suggestion)
+
+        return Response(
+            {
+                "upvoted": my_vote == 1,
+                "upvotes_count": upvotes,
+                "downvotes_count": downvotes,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class SuggestionDetailView(generics.DestroyAPIView):
+    """DELETE /api/posts/suggestions/<id>/ — sirf apni suggestion/reply delete ho sakti hai."""
+
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Suggestion.objects.all()
+    lookup_field = "id"
+    lookup_url_kwarg = "suggestion_id"
+
+    def perform_destroy(self, instance):
+        if instance.author_id != self.request.user.id:
+            raise PermissionDenied("You can only delete your own suggestion.")
+        instance.delete()
+
+
+class SuggestionReportView(APIView):
+    """POST /api/posts/suggestions/<id>/report/ — admin me SuggestionReport me dikhega."""
+
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, suggestion_id):
+        suggestion = get_object_or_404(Suggestion, id=suggestion_id)
+
+        if suggestion.author_id == request.user.id:
+            raise ValidationError({"error": "You can't report your own suggestion."})
+
+        SuggestionReport.objects.get_or_create(
+            suggestion=suggestion, reporter=request.user
+        )
+        return Response({"reported": True}, status=status.HTTP_200_OK)
 
 
 # ---------------------------------------------------------------------------

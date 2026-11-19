@@ -58,6 +58,9 @@ const SolutionRoomModal = ({ post, onClose, onCountChange }) => {
   const [posting, setPosting] = useState(false);
   const [postError, setPostError] = useState("");
 
+  // chhota sa message (jaise "Reported") jo 3 second me hat jata hai
+  const [notice, setNotice] = useState("");
+
   const inputRef = useRef(null);
   const listRef = useRef(null);
 
@@ -149,29 +152,76 @@ const SolutionRoomModal = ({ post, onClose, onCountChange }) => {
     });
   };
 
-  const toggleUpvote = async (item) => {
-    const delta = item.is_upvoted ? -1 : 1;
+  // value: 1 = upvote, -1 = downvote. Wahi button dobara dabane par vote hat jata hai
+  const vote = async (item, value) => {
+    const newVote = item.my_vote === value ? 0 : value;
+    const upDiff = (newVote === 1 ? 1 : 0) - (item.my_vote === 1 ? 1 : 0);
+    const downDiff = (newVote === -1 ? 1 : 0) - (item.my_vote === -1 ? 1 : 0);
+
     // optimistic update
     patchItem(item.id, (s) => ({
       ...s,
-      is_upvoted: !item.is_upvoted,
-      upvotes_count: s.upvotes_count + delta,
+      my_vote: newVote,
+      is_upvoted: newVote === 1,
+      upvotes_count: s.upvotes_count + upDiff,
+      downvotes_count: (s.downvotes_count || 0) + downDiff,
     }));
 
     try {
-      const res = await axiosInstance.post(`/api/posts/suggestions/${item.id}/upvote/`);
+      const res = await axiosInstance.post(`/api/posts/suggestions/${item.id}/vote/`, { value });
       patchItem(item.id, (s) => ({
         ...s,
-        is_upvoted: res.data.upvoted,
+        my_vote: res.data.my_vote,
+        is_upvoted: res.data.my_vote === 1,
         upvotes_count: res.data.upvotes_count,
+        downvotes_count: res.data.downvotes_count,
       }));
     } catch {
       // revert on failure
       patchItem(item.id, (s) => ({
         ...s,
-        is_upvoted: item.is_upvoted,
+        my_vote: item.my_vote,
+        is_upvoted: item.my_vote === 1,
         upvotes_count: item.upvotes_count,
+        downvotes_count: item.downvotes_count,
       }));
+    }
+  };
+
+  const toggleUpvote = (item) => vote(item, 1);
+  const toggleDownvote = (item) => vote(item, -1);
+
+  const showNotice = (message) => {
+    setNotice(message);
+    setTimeout(() => setNotice(""), 3000);
+  };
+
+  const handleDelete = async (item) => {
+    if (!window.confirm("Delete this suggestion? Its replies will be deleted too.")) return;
+
+    try {
+      await axiosInstance.delete(`/api/posts/suggestions/${item.id}/`);
+      setSuggestions((prev) => prev.filter((s) => s.id !== item.id));
+      setRepliesById((prev) => {
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      });
+      if (replyTarget?.id === item.id) cancelReply();
+      onCountChange?.(-1);
+    } catch {
+      showNotice("Couldn't delete. Try again.");
+    }
+  };
+
+  const handleReport = async (item) => {
+    if (!window.confirm("Report this suggestion?")) return;
+
+    try {
+      await axiosInstance.post(`/api/posts/suggestions/${item.id}/report/`);
+      showNotice("Thanks, we'll review this suggestion.");
+    } catch {
+      showNotice("Couldn't report. Try again.");
     }
   };
 
@@ -394,6 +444,9 @@ const SolutionRoomModal = ({ post, onClose, onCountChange }) => {
                   item={s}
                   repliesState={repliesById[s.id]}
                   onUpvote={toggleUpvote}
+                  onDownvote={toggleDownvote}
+                  onDelete={handleDelete}
+                  onReport={handleReport}
                   onReply={startReply}
                   onToggleReplies={toggleReplies}
                 />
@@ -414,6 +467,10 @@ const SolutionRoomModal = ({ post, onClose, onCountChange }) => {
 
         {/* Reply composer (hamesha dikhta hai, Reply dabane par chalu hota hai) */}
         <div className="border-t border-border bg-surface">
+          {notice && (
+            <p className="px-4 sm:px-6 py-2 text-xs text-text-secondary bg-card">{notice}</p>
+          )}
+
           {replyTarget && (
             <div className="flex items-center justify-between px-4 sm:px-6 py-2 bg-card text-xs text-text-secondary">
               <span>Replying to @{replyTarget.username}</span>

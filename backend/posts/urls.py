@@ -13,6 +13,9 @@ from .views import (
     SuggestionListCreateView,
     SuggestionReplyListCreateView,
     SuggestionUpvoteToggleView,
+    SuggestionVoteView,
+    SuggestionDetailView,
+    SuggestionReportView,
 )
 
 urlpatterns = [
@@ -28,4 +31,7 @@ urlpatterns = [
     path("<uuid:post_id>/suggestions/", SuggestionListCreateView.as_view(), name="post-suggestions"),
     path("suggestions/<uuid:suggestion_id>/replies/", SuggestionReplyListCreateView.as_view(), name="suggestion-replies"),
     path("suggestions/<uuid:suggestion_id>/upvote/", SuggestionUpvoteToggleView.as_view(), name="suggestion-upvote"),
+    path("suggestions/<uuid:suggestion_id>/vote/", SuggestionVoteView.as_view(), name="suggestion-vote"),
+    path("suggestions/<uuid:suggestion_id>/report/", SuggestionReportView.as_view(), name="suggestion-report"),
+    path("suggestions/<uuid:suggestion_id>/", SuggestionDetailView.as_view(), name="suggestion-detail"),
 ]

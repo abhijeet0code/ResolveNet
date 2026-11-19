@@ -53,7 +53,10 @@ class CommentSerializer(serializers.ModelSerializer):
 class SuggestionSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     upvotes_count = serializers.SerializerMethodField()
+    downvotes_count = serializers.SerializerMethodField()
+    my_vote = serializers.SerializerMethodField()  # 1 = maine upvote kiya, -1 = downvote, 0 = kuch nahi
     is_upvoted = serializers.SerializerMethodField()
+    is_mine = serializers.SerializerMethodField()  # kya ye suggestion meri hai (menu me Delete/Report ke liye)
     replies_count = serializers.SerializerMethodField()
 
     # "Needs" — chhoti chhoti lines ki list (max 10)
@@ -76,7 +79,10 @@ class SuggestionSerializer(serializers.ModelSerializer):
             "role_tag",
             "parent",
             "upvotes_count",
+            "downvotes_count",
+            "my_vote",
             "is_upvoted",
+            "is_mine",
             "replies_count",
             "created_at",
         ]
@@ -90,15 +96,33 @@ class SuggestionSerializer(serializers.ModelSerializer):
     # View annotate karta hai (fast). Annotate nahi hua (jaise create response) to fallback query.
     def get_upvotes_count(self, suggestion):
         annotated = getattr(suggestion, "upvotes_total", None)
-        return annotated if annotated is not None else suggestion.upvotes.count()
-
-    def get_is_upvoted(self, suggestion):
-        annotated = getattr(suggestion, "upvoted_by_me", None)
         if annotated is not None:
             return annotated
+        return suggestion.upvotes.filter(value=1).count()
+
+    def get_downvotes_count(self, suggestion):
+        annotated = getattr(suggestion, "downvotes_total", None)
+        if annotated is not None:
+            return annotated
+        return suggestion.upvotes.filter(value=-1).count()
+
+    def get_my_vote(self, suggestion):
+        if hasattr(suggestion, "my_vote_value"):
+            return suggestion.my_vote_value or 0  # annotate me vote na ho to None aata hai
         request = self.context.get("request")
         user = request.user if request else None
-        return bool(user and suggestion.upvotes.filter(user=user).exists())
+        if not user:
+            return 0
+        vote = suggestion.upvotes.filter(user=user).first()
+        return vote.value if vote else 0
+
+    def get_is_upvoted(self, suggestion):
+        return self.get_my_vote(suggestion) == 1
+
+    def get_is_mine(self, suggestion):
+        request = self.context.get("request")
+        user = request.user if request else None
+        return bool(user and suggestion.author_id == user.id)
 
     def get_replies_count(self, suggestion):
         annotated = getattr(suggestion, "replies_total", None)
