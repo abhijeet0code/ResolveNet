@@ -1,19 +1,41 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
-import GooeyNav from '../components/GooeyNav'
-
+import GooeyNav from "../components/GooeyNav";
 
 import api from "../../../../config/axiosInstance";
 
 import SearchBar from "../components/SearchBar";
 import { SkeletonPostCard, SkeletonSearchRow } from "../components/SkeletonPostCard";
-import { UNSAFE_getTurboStreamSingleFetchDataStrategy } from "react-router-dom";
 
 const RECENT_KEY = "resolvenet_recent_searches";
 const MAX_RECENT = 6;
 const DEBOUNCE_MS = 400;
 
-const SearchPage=() => {
+// GooeyNav ke tabs. Order wahi rakhna jo TAB_TYPES aur TAB_PLACEHOLDERS ka hai
+// (items component ke bahar hai, taaki har render par naya array na bane)
+const TAB_ITEMS = [
+  { label: "Posts", href: "#" },
+  { label: "Accounts", href: "#" },
+  { label: "Near me", href: "#" },
+];
+const TAB_TYPES = ["posts", "accounts", "near"]; // backend ke ?type= ki value
+const TAB_PLACEHOLDERS = [
+  "Search issues and places",
+  "Search people",
+  "Search issues near you",
+];
+
+const getPlace = (post) => [post.city, post.state].filter(Boolean).join(", ");
+
+const getSubtitle = (post) => {
+  const distance = post.distance_km !== undefined ? `${post.distance_km} km away` : "";
+  return [getPlace(post), distance].filter(Boolean).join(" · ");
+};
+
+const SearchPage = () => {
+  const navigate = useNavigate();
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
@@ -24,20 +46,21 @@ const SearchPage=() => {
   const [recent, setRecent] = useState([]);
   const debounceRef = useRef(null);
 
-  const showingResults = query.trim().length > 0;
+  const [selectedIndx, setSelectedIndx] = useState(0);
 
-  const items = [
-  { label: "Posts", href: "#" },
-  { label: "Accounts", href: "#" },
-  { label: "Near me", href: "#" },
-];
-  const [selectedIndx,setSelectedIndx]=useState(0)
+  // Near me tab ke liye user ki location
+  const [coords, setCoords] = useState(null);
+  const [locationError, setLocationError] = useState("");
 
+  const searchType = TAB_TYPES[selectedIndx];
+  const isNearTab = searchType === "near";
+
+  // Near me tab mein query ke bina bhi nearby posts dikhte hain
+  const showingResults = query.trim().length > 0 || isNearTab;
 
   const receiveActiveIndex = (index) => {
-    console.log(index)
-    setSelectedIndx(index)
-  }
+    setSelectedIndx(index);
+  };
 
   // Load recent searches from localStorage once
   useEffect(() => {
@@ -55,7 +78,7 @@ const SearchPage=() => {
     const fetchTrending = async () => {
       setTrendingLoading(true);
       try {
-        const res = await api.get("/posts/trending/");
+        const res = await api.get("/api/posts/trending/");
         if (active) setTrending(res.data);
       } catch (err) {
         console.error("Failed to load trending posts:", err);
@@ -69,31 +92,65 @@ const SearchPage=() => {
     };
   }, []);
 
-  // Debounced live search whenever `query` changes
+  // Near me tab khulte hi browser se location maango (ek hi baar)
   useEffect(() => {
-    if (!query.trim()) {
+    if (!isNearTab || coords) return;
+
+    if (!navigator.geolocation) {
+      setLocationError("Your browser doesn't support location.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setLocationError("");
+      },
+      () => {
+        setLocationError("Please allow location access to see issues near you.");
+      }
+    );
+  }, [isNearTab, coords]);
+
+  // Debounced live search — query, tab ya location badalne par
+  useEffect(() => {
+    // Posts / Accounts: query chahiye. Near me: location chahiye (query optional)
+    const needsQuery = !isNearTab && !query.trim();
+    const needsLocation = isNearTab && !coords;
+
+    if (needsQuery || needsLocation) {
       setResults([]);
       setSearchLoading(false);
       return;
     }
 
+    let active = true;
     setSearchLoading(true);
     clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await api.get("/search/", { params: { q: query } });
-        setResults(res.data);
+        const params = { q: query.trim(), type: searchType };
+        if (isNearTab) {
+          params.lat = coords.lat;
+          params.lng = coords.lng;
+        }
+
+        const res = await api.get("/api/search/", { params });
+        if (active) setResults(res.data.results);
       } catch (err) {
         console.error("Search failed:", err);
-        setResults([]);
+        if (active) setResults([]);
       } finally {
-        setSearchLoading(false);
+        if (active) setSearchLoading(false);
       }
     }, DEBOUNCE_MS);
 
-    return () => clearTimeout(debounceRef.current);
-  }, [query]);
+    return () => {
+      active = false;
+      clearTimeout(debounceRef.current);
+    };
+  }, [query, searchType, isNearTab, coords]);
 
   const saveRecent = useCallback((term) => {
     if (!term.trim()) return;
@@ -117,6 +174,11 @@ const SearchPage=() => {
     setRecent([]);
   };
 
+  const openPost = (postId) => {
+    saveRecent(query);
+    navigate(`/dashboard/posts/${postId}`);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Sticky search bar */}
@@ -126,15 +188,13 @@ const SearchPage=() => {
           onChange={setQuery}
           onClear={() => setQuery("")}
           autoFocus
-          placeholder="Search issues, categories, people"
-          
+          placeholder={TAB_PLACEHOLDERS[selectedIndx]}
         />
       </div>
 
-      <div  className=" bg-accent-light m-2 ">
+      <div className=" bg-accent-light m-2 ">
         <GooeyNav
-        
-          items={items}
+          items={TAB_ITEMS}
           sendActiveIndex={receiveActiveIndex}
           particleCount={12}
           particleDistances={[90, 10]}
@@ -189,7 +249,7 @@ const SearchPage=() => {
         {!showingResults && (
           <div>
             <h2 className="mb-3 text-sm font-medium text-text-primary">
-              Trending in your area
+              Trending this week
             </h2>
             <div className="grid grid-cols-3 gap-1">
               {trendingLoading
@@ -200,12 +260,12 @@ const SearchPage=() => {
                     <button
                       key={post.id}
                       type="button"
-                      onClick={() => window.location.assign(`/posts/${post.id}`)}
+                      onClick={() => navigate(`/dashboard/posts/${post.id}`)}
                       className="aspect-square overflow-hidden rounded-lg bg-card"
                     >
                       <img
-                        src={post.image}
-                        alt={post.title}
+                        src={post.media?.[0]?.image_url}
+                        alt={post.caption}
                         className="h-full w-full object-cover transition-transform
                                    duration-200 hover:scale-105"
                       />
@@ -223,38 +283,76 @@ const SearchPage=() => {
         {/* Results list — active-query state, skeleton rows while loading */}
         {showingResults && (
           <div className="-mx-4">
-            {searchLoading ? (
+            {isNearTab && locationError ? (
+              <p className="py-10 text-center text-sm text-text-muted">{locationError}</p>
+            ) : isNearTab && !coords ? (
+              <p className="py-10 text-center text-sm text-text-muted">
+                Getting your location...
+              </p>
+            ) : searchLoading ? (
               Array.from({ length: 6 }).map((_, i) => <SkeletonSearchRow key={i} />)
             ) : results.length > 0 ? (
-              results.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    saveRecent(query);
-                    window.location.assign(`/posts/${item.id}`);
-                  }}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left
-                             transition-colors hover:bg-card"
-                >
-                  <div className="h-11 w-11 shrink-0 overflow-hidden rounded-full bg-card">
-                    {item.image && (
-                      <img src={item.image} alt="" className="h-full w-full object-cover" />
+              results.map((item) =>
+                searchType === "accounts" ? (
+                  // Account row (abhi kisi aur ki profile ka page nahi hai, isliye click nahi hota)
+                  <div key={item.id} className="flex w-full items-center gap-3 px-4 py-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-card">
+                      {item.avatar_url ? (
+                        <img src={item.avatar_url} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        <span className="text-sm font-semibold text-text-secondary">
+                          {(item.full_name || item.username)?.[0]?.toUpperCase() || "?"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-text-primary">
+                        {item.full_name || item.username}
+                      </p>
+                      <p className="truncate text-xs text-text-muted">
+                        @{item.username}
+                        {(item.city || item.state) &&
+                          ` · ${[item.city, item.state].filter(Boolean).join(", ")}`}
+                      </p>
+                    </div>
+                    {item.match === "similar" && (
+                      <span className="ml-auto shrink-0 rounded-full border border-border bg-card px-2 py-0.5 text-xs text-text-muted">
+                        Similar
+                      </span>
                     )}
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-text-primary">
-                      {item.title}
-                    </p>
-                    <p className="truncate text-xs text-text-muted">
-                      {item.category} · {item.location}
-                    </p>
-                  </div>
-                </button>
-              ))
+                ) : (
+                  // Post row (Posts aur Near me dono ke liye)
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => openPost(item.id)}
+                    className="flex w-full items-center gap-3 px-4 py-3 text-left
+                               transition-colors hover:bg-card"
+                  >
+                    <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-card">
+                      {item.media?.[0]?.image_url && (
+                        <img
+                          src={item.media[0].image_url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-text-primary">
+                        {item.caption}
+                      </p>
+                      <p className="truncate text-xs text-text-muted">{getSubtitle(item)}</p>
+                    </div>
+                  </button>
+                )
+              )
             ) : (
               <p className="py-10 text-center text-sm text-text-muted">
-                No results for "{query}"
+                {isNearTab && !query.trim()
+                  ? "No issues found near you."
+                  : `No results for "${query}"`}
               </p>
             )}
           </div>
@@ -262,6 +360,6 @@ const SearchPage=() => {
       </div>
     </div>
   );
-}
+};
 
 export default SearchPage;

@@ -1,9 +1,11 @@
 import uuid
+from datetime import timedelta
 
 from django.db import transaction
-from django.db.models import Count, Exists, OuterRef
+from django.db.models import Count, F, OuterRef, Q, Subquery
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
+from django.utils import timezone
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework import generics, permissions, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
@@ -22,9 +24,16 @@ from .models import (
     SavedPost,
     Comment,
     Suggestion,
+    SuggestionReport,
     SuggestionUpvote,
 )
-from .serializers import PostSerializer, CommentSerializer, SuggestionSerializer
+from .serializers import (
+    CommentSerializer,
+    PostSerializer,
+    SuggestionManageSerializer,
+    SuggestionSerializer,
+    is_official,
+)
 
 
 AUTH_CLASSES = [TokenAuthentication, SupabaseAuthentication]
@@ -214,18 +223,25 @@ class CommentListCreateView(generics.ListCreateAPIView):
 # ---------------------------------------------------------------------------
 
 def annotate_suggestions(queryset, user):
-    """Counts + 'maine upvote kiya?' ek hi query mein (N+1 se bachne ke liye)."""
+    """Counts + 'meri vote kya hai?' ek hi query mein (N+1 se bachne ke liye)."""
     return queryset.select_related("author__profile").annotate(
-        upvotes_total=Count("upvotes", distinct=True),
+        upvotes_total=Count("upvotes", filter=Q(upvotes__value=1), distinct=True),
+        downvotes_total=Count("upvotes", filter=Q(upvotes__value=-1), distinct=True),
         replies_total=Count("replies", distinct=True),
-        upvoted_by_me=Exists(
-            SuggestionUpvote.objects.filter(suggestion=OuterRef("pk"), user=user)
+        my_vote_value=Subquery(
+            SuggestionUpvote.objects.filter(
+                suggestion=OuterRef("pk"), user=user
+            ).values("value")[:1]
         ),
     )
 
 
 class SuggestionListCreateView(generics.ListCreateAPIView):
-    """GET: post ke top-level suggestions (sabse zyada upvote pehle). POST: nayi suggestion."""
+    """
+    GET: post ke top-level suggestions (sabse zyada upvote pehle).
+         ?category=citizen se ek tab ki suggestions.
+    POST: nayi suggestion — title, description, needs, category, role_tag.
+    """
 
     serializer_class = SuggestionSerializer
     pagination_class = PostPagination
@@ -236,16 +252,33 @@ class SuggestionListCreateView(generics.ListCreateAPIView):
         qs = Suggestion.objects.filter(
             post_id=self.kwargs["post_id"], parent__isnull=True
         )
-        return annotate_suggestions(qs, self.request.user).order_by(
-            "-upvotes_total", "created_at"
+
+        category = self.request.query_params.get("category")
+        if category:
+            qs = qs.filter(category=category)
+
+        qs = annotate_suggestions(qs, self.request.user)
+        # sabse zyada (up - down) wali suggestion upar
+        return qs.annotate(score=F("upvotes_total") - F("downvotes_total")).order_by(
+            "-score", "created_at"
         )
 
     def perform_create(self, serializer):
         post = get_object_or_404(Post, id=self.kwargs["post_id"])
-        text = self.request.data.get("text", "").strip()
-        if not text:
-            raise ValidationError({"text": "Suggestion can't be empty."})
-        serializer.save(post=post, author=self.request.user, text=text)
+
+        # naya form "description" bhejta hai, purana modal sirf "text"
+        description = (
+            self.request.data.get("description") or self.request.data.get("text") or ""
+        ).strip()
+        if not description:
+            raise ValidationError({"description": "Description can't be empty."})
+
+        serializer.save(
+            post=post,
+            author=self.request.user,
+            description=description,
+            text=description[:1000],
+        )
 
 
 class SuggestionReplyListCreateView(generics.ListCreateAPIView):
@@ -269,24 +302,176 @@ class SuggestionReplyListCreateView(generics.ListCreateAPIView):
         serializer.save(post=root.post, parent=root, author=self.request.user, text=text)
 
 
-class SuggestionUpvoteToggleView(APIView):
+def apply_vote(suggestion, user, value):
+    """
+    value: 1 (upvote) ya -1 (downvote).
+    Wahi button dobara dabaya to vote hat jata hai, doosra dabaya to vote badal jata hai.
+    Return: meri nayi vote (1, -1 ya 0).
+    """
+    vote = SuggestionUpvote.objects.filter(suggestion=suggestion, user=user).first()
+
+    if vote and vote.value == value:
+        vote.delete()
+        return 0
+
+    if vote:
+        vote.value = value
+        vote.save(update_fields=["value"])
+        return value
+
+    SuggestionUpvote.objects.create(suggestion=suggestion, user=user, value=value)
+    return value
+
+
+def vote_counts(suggestion):
+    votes = suggestion.upvotes
+    return votes.filter(value=1).count(), votes.filter(value=-1).count()
+
+
+class SuggestionVoteView(APIView):
+    """POST /api/posts/suggestions/<id>/vote/   body: {"value": 1} ya {"value": -1}"""
+
     authentication_classes = AUTH_CLASSES
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, suggestion_id):
         suggestion = get_object_or_404(Suggestion, id=suggestion_id)
-        upvote = SuggestionUpvote.objects.filter(
-            suggestion=suggestion, user=request.user
-        ).first()
 
-        if upvote:
-            upvote.delete()
-            upvoted = False
-        else:
-            SuggestionUpvote.objects.create(suggestion=suggestion, user=request.user)
-            upvoted = True
+        try:
+            value = int(request.data.get("value"))
+        except (TypeError, ValueError):
+            value = None
+        if value not in (1, -1):
+            raise ValidationError({"value": "value 1 (up) ya -1 (down) honi chahiye."})
+
+        my_vote = apply_vote(suggestion, request.user, value)
+        upvotes, downvotes = vote_counts(suggestion)
 
         return Response(
-            {"upvoted": upvoted, "upvotes_count": suggestion.upvotes.count()},
+            {"my_vote": my_vote, "upvotes_count": upvotes, "downvotes_count": downvotes},
             status=status.HTTP_200_OK,
+        )
+
+
+class SuggestionUpvoteToggleView(APIView):
+    """Purana endpoint — ab bhi chalta hai (sirf upvote toggle)."""
+
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, suggestion_id):
+        suggestion = get_object_or_404(Suggestion, id=suggestion_id)
+
+        my_vote = apply_vote(suggestion, request.user, 1)
+        upvotes, downvotes = vote_counts(suggestion)
+
+        return Response(
+            {
+                "upvoted": my_vote == 1,
+                "upvotes_count": upvotes,
+                "downvotes_count": downvotes,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class SuggestionDetailView(generics.DestroyAPIView):
+    """DELETE /api/posts/suggestions/<id>/ — sirf apni suggestion/reply delete ho sakti hai."""
+
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Suggestion.objects.all()
+    lookup_field = "id"
+    lookup_url_kwarg = "suggestion_id"
+
+    def perform_destroy(self, instance):
+        if instance.author_id != self.request.user.id:
+            raise PermissionDenied("You can only delete your own suggestion.")
+        instance.delete()
+
+
+class SuggestionReportView(APIView):
+    """POST /api/posts/suggestions/<id>/report/ — admin me SuggestionReport me dikhega."""
+
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, suggestion_id):
+        suggestion = get_object_or_404(Suggestion, id=suggestion_id)
+
+        if suggestion.author_id == request.user.id:
+            raise ValidationError({"error": "You can't report your own suggestion."})
+
+        SuggestionReport.objects.get_or_create(
+            suggestion=suggestion, reporter=request.user
+        )
+        return Response({"reported": True}, status=status.HTTP_200_OK)
+
+
+class SuggestionManageView(APIView):
+    """PATCH /api/posts/suggestions/<id>/manage/ — sirf official: approx budget / time badalna."""
+
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, suggestion_id):
+        if not is_official(request.user):
+            raise PermissionDenied("Only officials can manage this section.")
+
+        suggestion = get_object_or_404(Suggestion, id=suggestion_id)
+        serializer = SuggestionManageSerializer(suggestion, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# ---------------------------------------------------------------------------
+# Trending + single post
+# ---------------------------------------------------------------------------
+
+TRENDING_DAYS = 7
+TRENDING_LIMIT = 12
+
+
+class PostTrendingView(generics.ListAPIView):
+    """Pichhle 7 din mein sabse zyada likes + suggestions wale posts (Search page ke liye)."""
+
+    serializer_class = PostSerializer
+    pagination_class = None
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        since = timezone.now() - timedelta(days=TRENDING_DAYS)
+        return (
+            Post.objects.filter(status=Post.Status.PUBLISHED)
+            .select_related("author__profile")
+            .prefetch_related("media")
+            .annotate(
+                recent_likes=Count(
+                    "likes", filter=Q(likes__created_at__gte=since), distinct=True
+                ),
+                recent_suggestions=Count(
+                    "suggestions", filter=Q(suggestions__created_at__gte=since), distinct=True
+                ),
+            )
+            .annotate(score=F("recent_likes") + F("recent_suggestions"))
+            .order_by("-score", "-created_at")[:TRENDING_LIMIT]
+        )
+
+
+class PostDetailView(generics.RetrieveAPIView):
+    """Ek single post — search result ya share link kholne ke liye."""
+
+    serializer_class = PostSerializer
+    authentication_classes = AUTH_CLASSES
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "id"
+    lookup_url_kwarg = "post_id"
+
+    def get_queryset(self):
+        return (
+            Post.objects.exclude(status=Post.Status.REMOVED)
+            .select_related("author__profile")
+            .prefetch_related("media")
         )

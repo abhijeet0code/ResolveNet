@@ -112,6 +112,21 @@ class Comment(models.Model):
         # ---- posts/models.py ke END mein ye paste karo (existing code ko mat chhedo) ----
 
 class Suggestion(models.Model):
+    # Solution Room ki tabs (Citizen / University / ...)
+    class Category(models.TextChoices):
+        CITIZEN = "citizen", "Citizen"
+        UNIVERSITY = "university", "University"
+        INDUSTRIAL = "industrial", "Industrial"
+        EXPERT = "expert", "Experts"
+        GOVERNMENT = "government", "Government"
+        NGO = "ngo", "NGO"
+        OTHER = "other", "Other"
+
+    # suggestion dene wala kis roop me madad kar raha hai
+    class RoleTag(models.TextChoices):
+        SAVIOUR = "saviour", "Saviour"
+        HELPER = "helper", "Helper"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="suggestions")
@@ -128,7 +143,27 @@ class Suggestion(models.Model):
         on_delete=models.CASCADE,
         related_name="replies",
     )
+    # purana text field rehta hai: purani suggestions aur replies isi me hain.
+    # Nayi suggestion me text = description (taaki purana modal bhi chale)
     text = models.TextField(max_length=1000)
+
+    # --- Solution Room ke naye fields (sab optional, purana data nahi tootega) ---
+    title = models.CharField(max_length=200, blank=True)
+    description = models.TextField(max_length=2000, blank=True)
+    needs = models.JSONField(default=list, blank=True)  # ["More dustbins", "Regular cleaning"]
+    category = models.CharField(
+        max_length=20,
+        choices=Category.choices,
+        default=Category.CITIZEN,
+        db_index=True,
+    )
+    role_tag = models.CharField(max_length=20, choices=RoleTag.choices, blank=True)
+
+    # --- "Admin Only" panel (sirf official/government badal sakte hain) ---
+    approx_budget = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
+    approx_start = models.DateField(null=True, blank=True)
+    approx_end = models.DateField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -147,8 +182,29 @@ class SuggestionUpvote(models.Model):
         on_delete=models.CASCADE,
         related_name="suggestion_upvotes",
     )
+    # 1 = upvote, -1 = downvote (purani rows apne aap 1 = upvote rahengi)
+    value = models.SmallIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # ek user ek suggestion ko ek hi baar upvote kar sakta hai
+        # ek user ek suggestion par ek hi vote (up ya down) de sakta hai
         unique_together = ("suggestion", "user")
+
+
+class SuggestionReport(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    suggestion = models.ForeignKey(
+        Suggestion, on_delete=models.CASCADE, related_name="reports"
+    )
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="suggestion_reports",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        # ek user ek suggestion ko ek hi baar report kar sakta hai
+        unique_together = ("suggestion", "reporter")
+        ordering = ["-created_at"]

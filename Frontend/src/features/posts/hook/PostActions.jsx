@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Heart, MessageCircle, Bookmark, Share2, Lightbulb } from "lucide-react";
 import axiosInstance from "../../../config/axiosInstance"; 
 import PostComments from "../ui/components/PostComments";
-import SuggestionModal from "../ui/components/SuggestionModal";
+import SolutionRoomModal from "../ui/components/SolutionRoomModal";
 import PulseHeart from './PulseHeart';
 
 
@@ -112,7 +112,7 @@ const PostActions = ({ post, postId, initialLiked, initialLikesCount, initialSav
 
       {/* NEW: Suggestions modal */}
       {showSuggestions && (
-        <SuggestionModal
+        <SolutionRoomModal
           post={post}
           onClose={() => setShowSuggestions(false)}
           onCountChange={(delta) => setSuggestionsCount((c) => c + delta)}
