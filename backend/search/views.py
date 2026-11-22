@@ -2,7 +2,10 @@ import logging
 import math
 
 from django.db.models import Q
-from pgvector.django import CosineDistance
+try:
+    from pgvector.django import CosineDistance  # type: ignore[import-not-found]
+except ImportError:
+    CosineDistance = None
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
