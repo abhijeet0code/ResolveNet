@@ -9,15 +9,12 @@ from django.dispatch import receiver
 
 class Profile(models.Model):
     OCCUPATION_CHOICES=[
-    ("student", "Student"),
-    ("working_professional", "Working Professional"),
+    ("student", "Student"), 
+    ("working_professional", "Working Professional"), 
     ("researcher", "Researcher / Academic"),
-    ("business_owner", "Business Owner / Entrepreneur"),
-    ("teacher", "Teacher / Educator"),
-    ("social_worker", "Social Worker / NGO Member"),
+    ("industry", "Industry / Company"),
     ("government_official", "Government Department Official"),
     ("other", "Other"),
-
     ]
 
 

@@ -667,12 +667,20 @@ const UpdateProfile = () => {
                         Student
                       </option>
 
-                      <option value="government">
+                      <option value="working_professional">
+                        Working Professional
+                      </option>
+
+                      <option value="researcher">
+                        Researcher
+                      </option>
+
+                      <option value="government_official">
                         Government Official
                       </option>
 
                       <option value="industry">
-                        Industry Professional
+                        Industry
                       </option>
 
                       <option value="university">
